@@ -50,4 +50,21 @@
       io.observe(x);
     });
   }
+    // gallery videos play only while on screen, so they don't slow down the intro
+  if ('IntersectionObserver' in window) {
+    var vio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+        else v.pause();
+      });
+    }, { threshold: .25 });
+    document.querySelectorAll('.video-tile video').forEach(function (v) { vio.observe(v); });
+  }
+    // marquee: repeat the text so the strip never runs empty
+  var mq = document.querySelector('.marquee div');
+  if (mq) {
+    var one = mq.innerHTML.trim();
+    mq.innerHTML = new Array(13).join('<span>' + one + '</span>');
+  }
 })();

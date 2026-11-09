@@ -15,6 +15,19 @@
     rel="stylesheet">
   <link rel="stylesheet" href="./site.css">
   <link rel="stylesheet" href="./planner.css">
+  <link rel="stylesheet" href="./intro.css">
+  <link rel="stylesheet" href="./menu-section.css">
+<link rel="preload" as="image" href="./assets/leaf-cutout.webp">
+<script>
+  (function () {
+    var r = document.documentElement;
+    try { if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) {}
+    r.className += ' cin-js cin-lock';
+    setTimeout(function () {
+      if (!window.__cinAlive) { r.className = r.className.replace(' cin-lock', '') + ' cin-done'; }
+    }, 4000);
+  })();
+</script>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"CateringBusiness","name":"Abhinav Caterers",
    "description":"Pure vegetarian outdoor catering","servesCuisine":"South Indian, Vegetarian",
@@ -36,7 +49,7 @@
       </span>
     </a>
     <nav>
-      <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#contact">Contact</a>
+      <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#menu">Menu</a><a href="#contact">Contact</a>
       <button class="nav-cta plan-btn" type="button">Plan an Event</button>
     </nav>
     <button class="menu-toggle" aria-label="Open navigation" onclick="document.querySelector('.nav nav').classList.toggle('open')">☰</button>
@@ -46,32 +59,29 @@
 
     <main id="home">
 
-      <section class="hero">
-        <div class="hero-copy reveal">
-          <div class="eyebrow"><span></span> PURE VEGETARIAN · OUTDOOR CATERING</div>
-          <h1>Celebrations,<br><em>served beautifully.</em></h1>
-          <p>Traditional South Indian soul, refined presentation and dependable event service — crafted for weddings,
-            functions, parties and every occasion worth gathering for.</p>
-          <div class="hero-actions"><button class="primary plan-btn" type="button">Plan an Event <span>✦</span></button></div>
+      <section class="hero-cinema" id="cinema">
+  <h1 class="sr-only">Abhinav Caterers: Pure Vegetarian Outdoor Catering in Hyderabad</h1>
 
-          <div class="trust-row">
-            <div><strong>Pure Veg</strong><small>100% vegetarian catering</small></div><i></i>
-            <div><strong>All Occasions</strong><small>Home · Hall · Outdoor events</small></div><i></i>
-            <div><strong>Hyderabad</strong><small>Vanasthalipuram & nearby</small></div>
-          </div>
-        </div>
-        <div class="hero-stage">
-          <div class="orb orb-a"></div>
-          <div class="orb orb-b"></div>
-          <div class="hero-card card-back"><img src="./assets/banana-leaf-meal.jpg" alt="Traditional meal on banana leaf">
-          </div>
-          <div class="hero-card card-front"><img src="./assets/buffet.jpg" alt="Abhinav Caterers buffet setup">
-          </div>
-          <div class="floating-chip chip-one">✦ <span>Premium Service</span></div>
-          <div class="floating-chip chip-two">VEG <span>since day one</span></div>
-        </div>
-      </section>
+  <div class="cin-glow"></div>
+  <canvas id="cin-canvas" aria-hidden="true"></canvas>
+  <img class="cin-leaf" id="cin-leaf" src="./assets/leaf-cutout.webp" width="720" height="1280" decoding="async"
+    alt="A traditional pure vegetarian banana-leaf meal served by Abhinav Caterers">
+  <div class="cin-vignette"></div>
 
+  <div class="cin-bang" id="cin-bang" aria-hidden="true"><i class="bar"></i><i class="pt"></i></div>
+  <div class="cin-title" id="cin-title" aria-hidden="true"><span class="cin-word" id="cin-word">CATERERS</span></div>
+<div class="cin-title cin-title-top docked" id="cin-title2" aria-hidden="true"><span class="cin-word" id="cin-word2">ABHINAV</span></div>
+
+  <div class="cin-sub">
+    <div class="cin-sub-copy">
+      <p class="cin-tag">Celebrations, <em>served beautifully.</em></p>
+      <p class="cin-loc">Pure Vegetarian · Outdoor Catering · Hyderabad</p>
+    </div>
+    <button class="primary plan-btn" type="button">Plan an Event <span>✦</span></button>
+  </div>
+
+  <button class="cin-skip" type="button">Skip intro</button>
+</section>
       <section class="marquee">
         <div>WEDDINGS ✦ RECEPTIONS ✦ HOUSE WARMINGS ✦ BIRTHDAYS ✦ CORPORATE EVENTS ✦ FESTIVALS ✦ PUJA & FUNCTIONS ✦</div>
       </section>
@@ -114,21 +124,52 @@
           <p>Real catering moments from Abhinav Caterers.</p>
         </div>
         <div class="video-grid">
-          <div class="video-tile large"><video autoplay muted loop playsinline poster="./assets/buffet.jpg">
+          <div class="video-tile large"><video muted loop playsinline preload="none" poster="./assets/buffet.jpg">
               <source src="./assets/catering-2.mp4" type="video/mp4">
             </video>
             <div class="video-caption"><b>The buffet reveal</b><span>Presentation made for celebrations</span></div>
           </div>
-          <div class="video-tile"><video autoplay muted loop playsinline poster="./assets/banana-leaf-meal.jpg">
+          <div class="video-tile"><video muted loop playsinline preload="none" poster="./assets/banana-leaf-meal.jpg">
               <source src="./assets/catering-1.mp4" type="video/mp4">
             </video>
             <div class="video-caption"><b>Traditional service</b><span>South Indian favourites</span></div>
           </div>
-          <div class="video-tile"><video autoplay muted loop playsinline poster="./assets/menu-english-2.jpg">
+          <div class="video-tile"><video muted loop playsinline preload="none" poster="./assets/menu-english-2.jpg">
               <source src="./assets/catering-3.mp4" type="video/mp4">
             </video>
             <div class="video-caption"><b>Made for every occasion</b><span>Pure vegetarian catering</span></div>
           </div>
+        </div>
+      </section>
+
+            <section id="menu" class="section menu-block">
+        <div class="section-label">03 / OUR MENUS</div>
+        <div class="section-head">
+          <h2>Every dish, <em>made with care.</em></h2>
+          <p>Pick a menu, browse by category or search for a dish. Telugu names included.</p>
+        </div>
+
+        <div class="mn-tabs" id="mn-tabs" role="tablist">
+          <button class="mn-tab active" type="button" data-menu="standard" role="tab" aria-selected="true">
+            <b>Standard Menu</b><span>Pure vegetarian · Outdoor catering</span>
+          </button>
+          <button class="mn-tab" type="button" data-menu="all" role="tab" aria-selected="false">
+            <b>All Events Menu</b><span>Weddings · Receptions · Birthdays · House warming · Corporate &amp; all events</span>
+          </button>
+        </div>
+
+        <div class="mn-tools">
+          <input id="mn-search" type="search" placeholder="Search a dish…" aria-label="Search a dish" autocomplete="off">
+          <a id="mn-pdf" class="outline" href="./assets/Abhinav-Caterers-Standard-Menu.pdf" download>Download PDF ↓</a>
+        </div>
+
+        <div class="mn-cats" id="mn-cats"></div>
+        <div class="mn-list" id="mn-list"></div>
+        <p class="mn-count" id="mn-count"></p>
+
+        <div class="mn-cta">
+          <p>Found your favourites? Build your plate and get a quote.</p>
+          <button class="primary plan-btn" type="button">Plan an Event <span>✦</span></button>
         </div>
       </section>
 
@@ -201,11 +242,13 @@
 
   <script src="menu.js"></script>
   <script src="menu-te.js"></script>
+    <script src="menu-section.js"></script>
   <script src="plate-config.js"></script>
    <script src="food-art.js"></script>
    <script src="dish-art.js"></script>
   <script src="vessels.js"></script>
   <script src="landing.js"></script>
+  <script src="intro.js"></script>   <!-- add this line -->
   <script src="app.js"></script>
     <script src="quote-form.js"></script>
 </body>
