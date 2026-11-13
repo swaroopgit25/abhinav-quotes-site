@@ -43,6 +43,16 @@ window.scrollTo(0, 0);
 
   var isMobile = Math.min(window.innerWidth, window.innerHeight) < 640 || /Mobi|Android/i.test(navigator.userAgent);
   var finePointer = !!(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
+    /* ---- quality levels: 0 = full show, 1 = lighter, 2 = minimal. The page measures its own speed and steps down if needed ---- */
+  var Q = { lvl: 0, qs: 1, dust: 3200, fall: 30, sparks: 220, motes: 60 };
+  function setQuality(l) {
+    Q.lvl = l;
+    if (l === 0) { Q.qs = 1;    Q.dust = isMobile ? 1800 : 3200; Q.fall = isMobile ? 18 : 30; Q.sparks = 220; Q.motes = isMobile ? 40 : 60; }
+    else if (l === 1) { Q.qs = 0.75; Q.dust = 1400; Q.fall = 14; Q.sparks = 100; Q.motes = 28; }
+    else { Q.qs = 0.6; Q.dust = 0; Q.fall = 0; Q.sparks = 0; Q.motes = 0; }
+    root.classList.toggle('cin-lite', l >= 1);
+  }
+  setQuality(((navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 4) <= 2) ? 1 : 0);
 
     var DUST_IN = 3.2, A_START = 3.9, FADE_START = 5.0, FADE_END = 6.0, END_AT = 6.2;
 
@@ -51,6 +61,8 @@ window.scrollTo(0, 0);
   var cues = [], cueIdx = 0;
   var slots = [], slots2 = [], cur = '', scr = [];
   var P = null;                       // main particle set (the food)
+    var sprites = [], fall = [];        // falling dishes (canvas sprites)
+  var foodRow = null, foodIcons = []; // the row of dishes that replaces the middle name
   var motes = [], moteOn = false, moteA = 0;
   var pointer = { x: -999, y: -999, on: false };
   var par = { x: 0, y: 0, r: 0 };     // eased parallax values
@@ -60,7 +72,7 @@ window.scrollTo(0, 0);
     var r = hero.getBoundingClientRect();
     W = Math.max(1, Math.round(r.width));
     H = Math.max(1, Math.round(r.height));
-       dpr = 1;
+           dpr = Q.qs;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -68,7 +80,7 @@ window.scrollTo(0, 0);
   }
 
   function initMotes() {
-    var n = isMobile ? 58 : 70;
+        var n = Q.motes;
     motes = [];
     for (var i = 0; i < n; i++) {
       motes.push({
@@ -179,17 +191,113 @@ window.scrollTo(0, 0);
     }
   }
 
+    /* ------------------------------------------- dishes: falling + the row */
+  var FOOD_ROW = ['Jalebi', 'Idly', 'Biryani', 'Gulab Jamun', 'Pulihora', 'Medu Vada', 'Laddu'];
+  var FALL_SET = ['Jalebi', 'Idly', 'Biryani', 'Gulab Jamun', 'Pulihora', 'Medu Vada', 'Laddu', 'Samosa', 'Puri', 'Dosa'];
+
+  function dishArt(name) {
+    var a = null;
+    try { a = window.foodArt ? window.foodArt(name, '', '') : null; } catch (e) {}
+    return a || '<circle r="18" fill="#e59a2c" stroke="#a8650f" stroke-width="1.5"/><ellipse cx="-5" cy="-6" rx="6" ry="4" fill="#fff" opacity=".3"/>';
+  }
+  function dishSvg(name, px) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-21 -21 42 42"' + (px ? ' width="' + px + '" height="' + px + '"' : '') + '>' + dishArt(name) + '</svg>';
+  }
+    function loadSprites() {
+    sprites = FALL_SET.map(function (n, idx) {
+      var img = new Image();
+      img.onload = function () {            // turn the SVG into a plain bitmap once: drawing it every frame is then very cheap
+        try {
+          var c = document.createElement('canvas');
+          c.width = c.height = 96;
+          c.getContext('2d').drawImage(img, 0, 0, 96, 96);
+          sprites[idx] = c;
+        } catch (e) {}
+      };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(dishSvg(n, 96));
+      return img;
+    });
+  }
+  function initFall() {
+    fall = [];
+    var n = Q.fall;
+    var scale = Math.max(0.7, Math.min(1.4, H / 800));
+    for (var i = 0; i < n; i++) {
+      var sz = (isMobile ? 34 : 46) * (0.75 + Math.random() * 0.85);
+      fall.push({
+        img: i % sprites.length,
+        x: ((i * 0.618034 + Math.random() * 0.08) % 1) * W,
+        y: -sz, sz: sz,
+        t0: 0.05 + Math.random() * 1.3,
+        vy: 40 + Math.random() * 120,
+        g: (1000 + Math.random() * 600) * scale,
+        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 6,
+        ph: Math.random() * 6.28, gone: false
+      });
+    }
+  }
+  function drawFall(dt) {
+    if (!fall.length) return;
+    var live = 0;
+    for (var i = 0; i < fall.length; i++) {
+      var f = fall[i];
+      if (f.gone) continue;
+      live++;
+      if (t < f.t0) continue;
+      f.vy += f.g * dt; f.y += f.vy * dt; f.rot += f.vr * dt;
+      var x = f.x + Math.sin(t * 2 + f.ph) * 8;
+      if (f.y - f.sz > H) { f.gone = true; continue; }
+      var im = sprites[f.img];
+            if (!im || im.complete === false || im.naturalWidth === 0) continue;
+      ctx.save();
+      ctx.translate(x, f.y); ctx.rotate(f.rot);
+      ctx.drawImage(im, -f.sz / 2, -f.sz / 2, f.sz, f.sz);
+      ctx.restore();
+    }
+    if (!live) fall = [];
+  }
+
+  function showFood() {
+    word.classList.remove('drop', 'leave');
+    word.textContent = '';
+    slots = []; scr = []; cur = '';
+    foodRow = document.createElement('span');
+    foodRow.className = 'cin-food';
+    foodIcons = (isMobile ? FOOD_ROW.slice(0, 5) : FOOD_ROW).map(function (n) {
+      var el = document.createElement('i');
+      el.innerHTML = dishSvg(n);
+      foodRow.appendChild(el);
+      return el;
+    });
+    word.appendChild(foodRow);
+    fitWord();
+  }
+    function buildCaterers() {
+    word.classList.remove('drop', 'leave');
+    word.textContent = '';
+    slots = []; scr = []; cur = 'CATERERS';
+    var str = 'CATERERS';
+    for (var i = 0; i < str.length; i++) {
+      var s = makeLetter(str.charAt(i), i, false);
+      word.appendChild(s);
+      slots.push(s);
+    }
+    fitWord();
+  }
+  function popFood(i) { if (foodIcons[i]) foodIcons[i].classList.add('in'); }
+  function hideFood() { if (foodRow) foodRow.classList.add('out'); }
+
   /* ----------------------------- particles that become the food */
   function leafAngle() {                          // must match the CSS rotation of .cin-leaf
     return (window.matchMedia && window.matchMedia('(min-width: 641px)').matches) ? -90 : 0;
   }
   function buildParticles() {
-    if (P || !leaf.naturalWidth) return;
+   if (P || !leaf.naturalWidth || Q.dust === 0) return;
     var hr = hero.getBoundingClientRect(), lr = leaf.getBoundingClientRect();
     var rx = lr.left - hr.left, ry = lr.top - hr.top, rw = lr.width, rh = lr.height;
     if (rw < 20 || rh < 20) return;
 
-        var maxN = isMobile ? 2800 : 4500;
+       var maxN = Q.dust;
     var step = Math.max(3.4, Math.sqrt(rw * rh * 0.77 / maxN));
     var cols = Math.max(8, Math.floor(rw / step));
     var rows = Math.max(8, Math.floor(rh / step));
@@ -319,7 +427,7 @@ window.scrollTo(0, 0);
   }
 
   function updateParallax() {
-    if (!finePointer || !leaf.classList.contains('show')) return;
+       if (Q.lvl >= 1 || !finePointer || !leaf.classList.contains('show')) return;
     var tx = 0, ty = 0, tr = 0;
     if (pointer.on) {
       var nx = (pointer.x / W - 0.5), ny = (pointer.y / H - 0.5);
@@ -331,18 +439,140 @@ window.scrollTo(0, 0);
     leaf.style.setProperty('--pr', par.r.toFixed(3) + 'deg');
   }
 
+     /* ------------------------------ the impact: comet, flash, rings (all GPU-friendly CSS) + sparks (canvas) */
+  var fx = { sparks: [], ix: 0, iy: 0, bw: 8, hit: false };
+  var fxEl = null;
+  var SPARK_COL = ['rgba(255,180,80,.25)', 'rgba(255,200,100,.5)', 'rgba(255,225,140,.75)', 'rgba(255,248,210,.95)'];
+
+  function slotX(i) {                  // centre x of a letter, ignoring its flip-in transform
+    var hr = hero.getBoundingClientRect(), wr = word.getBoundingClientRect(), x = 0;
+    for (var k = 0; k < i; k++) x += slots[k].offsetWidth;
+    return (wr.left - hr.left) + x + slots[i].offsetWidth / 2;
+  }
+  function calcImpact() {
+    var hr = hero.getBoundingClientRect(), wr = word.getBoundingClientRect();
+    var fs = parseFloat(getComputedStyle(word).fontSize) || 100;
+    fx.ix = slotX(3);
+    fx.iy = (wr.top - hr.top) + wr.height / 2 + fs * 0.03;
+    fx.bw = Math.max(6, fs * 0.085);
+    hero.style.setProperty('--ix', fx.ix.toFixed(1) + 'px');
+    hero.style.setProperty('--iy', fx.iy.toFixed(1) + 'px');
+    hero.style.setProperty('--bw', fx.bw.toFixed(1) + 'px');
+    hero.style.setProperty('--rs', (W * 1.1 / 240).toFixed(2));
+  }
+  function makeFx() {
+    if (fxEl) return;
+    function mk(cls) {
+      var d = document.createElement('div');
+      d.className = 'cin-fx ' + cls;
+      d.setAttribute('aria-hidden', 'true');
+      hero.insertBefore(d, bang);
+      return d;
+    }
+    fxEl = { comet: mk('cin-comet'), flash: mk('cin-flash'), beam: mk('cin-beam'), r1: mk('cin-ring'), r2: mk('cin-ring r2') };
+    fxEl.comet.addEventListener('animationend', impact);        // the hit happens exactly when the comet lands, on any device
+  }
+  function clearFx() {
+    if (!fxEl) return;
+    for (var k in fxEl) if (fxEl[k].parentNode) fxEl[k].parentNode.removeChild(fxEl[k]);
+    fxEl = null;
+  }
+  function burst(x, y, n, sp, up) {
+    if (Q.sparks === 0) return;
+    n = Math.round(n * (isMobile ? 0.6 : 1) * (Q.lvl === 0 ? 1 : 0.5));
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * 6.2832, v = sp * (0.25 + Math.random() * 0.9);
+      fx.sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - (up || 0), life: 0, max: 0.5 + Math.random() * 0.7, s: 1 + Math.random() * 2.6 });
+    }
+    if (fx.sparks.length > Q.sparks) fx.sparks.splice(0, fx.sparks.length - Q.sparks);
+  }
+  function startComet() {
+    if (done) return;
+    makeFx(); calcImpact();
+    fxEl.comet.classList.add('go');
+  }
+  function impact() {
+    if (done || fx.hit) return;
+    fx.hit = true;
+    if (fxEl) {
+      fxEl.flash.classList.add('go'); fxEl.beam.classList.add('go'); fxEl.r1.classList.add('go');
+      if (Q.lvl === 0) fxEl.r2.classList.add('go');
+    }
+    burst(fx.ix, fx.iy, 120, 560, 80);
+    showSlot(3);
+    bang.classList.add('s1');
+    if (Q.lvl === 0) word.classList.add('shake');
+  }
+  function letterBurst(i) { if (done || !slots[i]) return; burst(slotX(i), fx.iy, 26, 300, 60); }
+  function calmDown() { word.classList.remove('shake'); }
+  function lineOff() { bang.classList.remove('s1'); }
+
+  function drawFx(dt) {                // only the sparks live on the canvas; everything else is CSS
+    var S = fx.sparks, n = 0, i, b;
+    if (!S.length) return;
+    var bk = [[], [], [], []];
+    for (i = 0; i < S.length; i++) {
+      var s = S[i];
+      s.life += dt;
+      if (s.life >= s.max) continue;
+      s.vy += 700 * dt; s.vx *= 0.99;
+      s.x += s.vx * dt; s.y += s.vy * dt;
+      var a = 1 - s.life / s.max, sz = s.s * (0.5 + a * 0.5);
+      b = bk[Math.min(3, (a * 4) | 0)];
+      b.push(s.x - sz, s.y - sz, sz * 2);
+      S[n++] = s;
+    }
+    S.length = n;
+    for (b = 0; b < 4; b++) {            // 4 draw calls in total, whatever the number of sparks
+      var L = bk[b];
+      if (!L.length) continue;
+      ctx.fillStyle = SPARK_COL[b];
+      ctx.beginPath();
+      for (i = 0; i < L.length; i += 3) ctx.rect(L[i], L[i + 1], L[i + 2], L[i + 2]);
+      ctx.fill();
+    }
+  }
+
+  /* ---- self-tuning: if this device can't keep up, step the show down a level ---- */
+  var ema = 16, gT = 0, realT = 0;
+  function applyQuality() {
+    if (!started) return;
+    size();
+    if (motes.length > Q.motes) motes.length = Q.motes;
+    for (var i = Q.fall; i < fall.length; i++) fall[i].gone = true;
+    if (fx.sparks.length > Q.sparks) fx.sparks.length = Q.sparks;
+    if (Q.dust === 0) P = null;
+    word.classList.remove('shake');
+  }
+  function watch(ms) {
+    if (done) return;
+    realT += ms / 1000;
+    if (realT > 8.5) { finish(); return; }          // hard limit: on a very slow device the intro never drags past ~8 seconds
+    if (Q.lvl >= 2) return;
+    ema += (Math.min(ms, 100) - ema) * 0.12;
+    gT += ms / 1000;
+    if (t < 0.4 || gT < 0.35) return;
+    gT = 0;
+    if (Q.lvl === 0 && ema > 28) { setQuality(1); applyQuality(); ema = 20; }
+    else if (Q.lvl === 1 && ema > 38) { setQuality(2); applyQuality(); }
+  }
+
   /* ----------------------------------------------------- the loop */
-  function frame(now) {
+    function frame(now) {
     raf = requestAnimationFrame(frame);
-        var dt = Math.min(0.25, Math.max(0, (now - last) / 1000));
+    var ms = now - last;
+    if (ms < 10) return;                  // 120/144 Hz screens: draw ~60-72 times a second instead of 144
     last = now;
-    step(dt);
+    watch(ms);
+    step(Math.min(0.1, ms / 1000));
   }
   function step(dt) {
     t += dt;
     while (cueIdx < cues.length && cues[cueIdx][0] <= t) { var fn = cues[cueIdx][1]; cueIdx++; fn(); }
     if (scr.length) tickMorph();
     ctx.clearRect(0, 0, W, H);
+    drawFx(dt);
+    drawFall(dt);
     drawParticles();
     drawMotes(dt);
     updateParallax();
@@ -358,6 +588,9 @@ window.scrollTo(0, 0);
     if (cur !== 'CATERERS') buildWord('CATERERS', true);
     else for (var i = 0; i < slots.length; i++) { slots[i].textContent = 'CATERERS'.charAt(i); slots[i].classList.add('in'); }
     scr = [];
+        word.classList.remove('drop', 'leave');
+    fall = []; foodRow = null; foodIcons = [];
+            fx.sparks = []; fx.hit = true; word.classList.remove('shake'); clearFx();
     buildTop(true);
     title.classList.add('docked');
     leaf.classList.add('show');
@@ -372,46 +605,69 @@ window.scrollTo(0, 0);
   }
 
   /* -------------------------------------------------- start up */
-  function start() {
-if (started || done) return;
+    function start() {
+    if (started || done) return;
     started = true;
     size();
     initMotes();
+    loadSprites();
+    initFall();
     buildWord('ABHINAV', false);
+        word.classList.add('drop');               // the I falls first, the other letters grow out of it
+    slots.forEach(function (el, i) {
+            el.style.setProperty('--dx', ((i - 3) * 1.6) + 'em');
+      if (i === 3) el.classList.add('seed');
+    });
     buildTop(false);
    
-
         cues = [
-            [0.05, function () { glow.classList.add('on'); }],
-      [0.2,  function () { bang.classList.add('s1'); }],
-      [0.7,  function () { showSlot(0); }],
-      [0.77, function () { showSlot(1); }],
-      [0.84, function () { showSlot(2); }],
-      [0.91, function () { showSlot(3); }],
-      [0.98, function () { showSlot(4); }],
-      [1.05, function () { showSlot(5); }],
-      [1.12, function () { showSlot(6); }],
-      [1.2,  buildParticles],
-      [1.45, function () { bang.classList.remove('s1'); }],
-      [1.65, function () { bang.classList.remove('s1'); showSlot(3); }],
-      [1.72, function () { showSlot(4); }],
-      [1.79, function () { showSlot(5); }],
-      [1.86, function () { showSlot(6); }],
-      [2.1,  function () { startMorph('V. JAGADEESWARI'); }],
-      [3.6,  function () { startMorph('CATERERS'); }],
-      [4.0,  function () { title.classList.add('docked'); }],
-      [4.1,  function () { root.classList.add('cin-navin'); root.classList.remove('cin-lock'); }],
-      [4.3,  function () { root.classList.add('cin-subin'); moteOn = true; }],
-      [4.4,  function () { showTop(0); }],
-      [4.46, function () { showTop(1); }],
-      [4.52, function () { showTop(2); }],
-      [4.58, function () { showTop(3); }],
-      [4.64, function () { showTop(4); }],
-      [4.7,  function () { showTop(5); }],
-      [4.76, function () { showTop(6); }],
-      [4.9,  function () { leaf.classList.add('show'); }],
+      [0.05, function () { glow.classList.add('on'); }],
+     [0.12, startComet],
+      [0.9,  impact],            // safety net: the comet's own animationend normally fires this first
+      [0.82, function () { showSlot(2); showSlot(4); }],
+      [0.94, function () { showSlot(1); showSlot(5); }],
+      [1.06, function () { showSlot(0); showSlot(6); }],
+      [1.1,  function () { letterBurst(2); letterBurst(4); }],
+      [1.22, function () { letterBurst(1); letterBurst(5); }],
+      [1.34, function () { letterBurst(0); letterBurst(6); }],
+      [0.95, calmDown],
+      [1.6,  lineOff],
+      [2.1,  clearFx],
+      [1.0,  buildParticles],
+      [2.2,  function () { word.classList.add('leave'); }],
+      [2.35, showFood],
+      [2.4,  function () { popFood(0); }],
+      [2.55, function () { popFood(1); }],
+      [2.7,  function () { popFood(2); }],
+      [2.85, function () { popFood(3); }],
+      [3.0,  function () { popFood(4); }],
+      [3.15, function () { popFood(5); }],
+      [3.3,  function () { popFood(6); }],
+      [3.5,  hideFood],
+      [3.6,  buildCaterers],
+      [3.62, function () { showSlot(0); }],
+      [3.69, function () { showSlot(1); }],
+      [3.76, function () { showSlot(2); }],
+      [3.83, function () { showSlot(3); }],
+      [3.9,  function () { showSlot(4); }],
+      [3.97, function () { showSlot(5); }],
+      [4.04, function () { showSlot(6); }],
+      [4.11, function () { showSlot(7); }],
+      [4.3,  function () { title.classList.add('docked'); }],
+      [4.4,  function () { root.classList.add('cin-navin'); root.classList.remove('cin-lock'); }],
+      [4.55, function () { root.classList.add('cin-subin'); moteOn = true; }],
+      [4.6,  function () { showTop(0); }],
+      [4.66, function () { showTop(1); }],
+      [4.72, function () { showTop(2); }],
+      [4.78, function () { showTop(3); }],
+      [4.84, function () { showTop(4); }],
+      [4.9,  function () { showTop(5); }],
+      [4.96, function () { showTop(6); }],
+      [5.1,  function () { leaf.classList.add('show'); }],
       [END_AT, finish]
     ];
+    cues.sort(function (a, b) { return a[0] - b[0]; });
+        buildParticles();                 // heavy job: done now, while the screen is still dark, so it can never stall the show
     cueIdx = 0; t = 0;
     resume();
   }

@@ -1,0 +1,19 @@
+/* Food cursors: samosa = normal arrow, laddu = over clickable things */
+:root {
+  --cur-default: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='-24 -24 48 48'><g transform='rotate(-42)'><path d='M0 -21 L14 16 L-14 16 Z' fill='%23e8a93c' stroke='%238c5a14' stroke-width='1.6' stroke-linejoin='round'/><path d='M0 -9 L7 9 L-7 9 Z' fill='white' opacity='.22'/><circle cx='-3' cy='4' r='1' fill='%238c5a14'/><circle cx='3' cy='7' r='1' fill='%238c5a14'/><circle cx='1' cy='-2' r='1' fill='%238c5a14'/></g></svg>") 8 7, auto;
+  --cur-pointer: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='-24 -24 48 48'><circle r='22' fill='none' stroke='%23ffd877' stroke-width='2'/><circle r='16' fill='%23e59a2c' stroke='%23a8650f' stroke-width='1.5'/><ellipse cx='-5' cy='-6' rx='6' ry='4' fill='white' opacity='.3'/><g fill='%23b9740f'><ellipse cx='2' cy='0' rx='3' ry='1.7'/><ellipse cx='-4' cy='3' rx='3' ry='1.7' transform='rotate(40 -4 3)'/><ellipse cx='1' cy='-5' rx='3' ry='1.7' transform='rotate(80 1 -5)'/><ellipse cx='5' cy='5' rx='3' ry='1.7' transform='rotate(120 5 5)'/><ellipse cx='-8' cy='-1' rx='3' ry='1.7' transform='rotate(160 -8 -1)'/><ellipse cx='7' cy='-3' rx='3' ry='1.7' transform='rotate(20 7 -3)'/></g></svg>") 20 20, pointer;
+  --cur-text: text;
+}
+
+/* everything gets the samosa */
+html, html * { cursor: var(--cur-default) !important; }
+
+/* clickable things get the laddu */
+html a, html a *, html button, html button *, html summary, html select, html label,
+html [role="button"], html [role="tab"], html [onclick],
+html input[type="checkbox"], html input[type="radio"], html input[type="date"], html input[type="submit"],
+html .plan-btn, html .plan-btn * { cursor: var(--cur-pointer) !important; }
+
+/* typing fields keep the normal text caret */
+html input:not([type="checkbox"]):not([type="radio"]):not([type="date"]):not([type="submit"]):not([type="button"]),
+html textarea { cursor: var(--cur-text) !important; }

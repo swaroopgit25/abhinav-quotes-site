@@ -161,3 +161,49 @@ html.cin-snap .cin-leaf, html.cin-snap .cin-glow, html.cin-snap .cin-bang { tran
 .marquee div { display: flex; width: max-content; animation: marquee 70s linear infinite; }
 .marquee div span { flex: none; padding-right: 2.4em; }
 .marquee:hover div { animation-play-state: paused; }
+
+/* ---- opening: a comet slams in as the I, the other letters fly out of it ---- */
+html.cin-js:not(.cin-done) .cin-word.drop .L:not(.in) { opacity: 0; transform: perspective(700px) translateX(var(--dx, 0)) rotateX(80deg) rotate(calc(var(--r, 0deg) * 2.5)) scale(.3); }
+html.cin-js:not(.cin-done) .cin-word.drop .L.seed:not(.in) { opacity: 0; transform: scale(3.2); }
+.cin-word.drop .L { transition: opacity .3s ease, transform .6s cubic-bezier(.2, 1.5, .4, 1); }
+.cin-word.drop .L.seed { transition: opacity .12s ease, transform .3s cubic-bezier(.2, 1.6, .4, 1); }
+
+.cin-word.shake { animation: cinShake .45s linear; }
+@keyframes cinShake { 0% { translate: 0 0; } 10% { translate: -8px 5px; } 20% { translate: 7px -6px; } 30% { translate: -6px -4px; } 40% { translate: 5px 5px; } 55% { translate: -3px 3px; } 70% { translate: 2px -2px; } 100% { translate: 0 0; } }
+
+/* ---- impact effects: only opacity/transform are animated, so the GPU does all the work ---- */
+.cin-fx { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; opacity: 0; will-change: transform, opacity; }
+.cin-comet { width: var(--bw, 8px); height: 340px; border-radius: 0 0 50% 50%; background: linear-gradient(180deg, rgba(255, 190, 70, 0), rgba(255, 244, 205, .95)); box-shadow: 0 0 26px 8px rgba(255, 214, 120, .6); transform: translate(calc(var(--ix, 50vw) - var(--bw, 8px) / 2), -360px); }
+.cin-comet.go { animation: cinComet .48s cubic-bezier(.55, 0, .9, .55) forwards; }
+@keyframes cinComet { 0% { opacity: 1; transform: translate(calc(var(--ix) - var(--bw) / 2), -360px); } 85% { opacity: 1; } 100% { opacity: 0; transform: translate(calc(var(--ix) - var(--bw) / 2), calc(var(--iy) - 340px)); } }
+.cin-flash { width: 100%; height: 100%; background: radial-gradient(circle at var(--ix, 50%) var(--iy, 50%), rgba(255, 238, 185, .8), rgba(255, 200, 80, .28) 34%, rgba(255, 200, 80, 0) 70%); }
+.cin-flash.go { animation: cinFlash .5s ease-out forwards; }
+@keyframes cinFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+.cin-beam { width: 30px; height: 100%; background: linear-gradient(90deg, rgba(255, 200, 80, 0), rgba(255, 236, 170, .85), rgba(255, 200, 80, 0)); }
+.cin-beam.go { animation: cinBeam .7s ease-out forwards; }
+@keyframes cinBeam { 0% { opacity: 1; transform: translateX(calc(var(--ix) - 15px)) scaleX(.4); } 100% { opacity: 0; transform: translateX(calc(var(--ix) - 15px)) scaleX(4); } }
+.cin-ring { width: 240px; height: 77px; border: 1px solid rgba(255, 214, 120, .95); border-radius: 50%; }
+.cin-ring.go { animation: cinRing .9s cubic-bezier(.1, .7, .2, 1) forwards; }
+.cin-ring.r2.go { animation-delay: .12s; }
+@keyframes cinRing { 0% { opacity: 1; transform: translate(calc(var(--ix) - 120px), calc(var(--iy) - 38px)) scale(.05); } 100% { opacity: 0; transform: translate(calc(var(--ix) - 120px), calc(var(--iy) - 38px)) scale(var(--rs, 8)); } }
+
+/* ---- lighter devices: no blurry glow filter on the big leaf photo, no screen shake ---- */
+html.cin-lite .cin-leaf { filter: saturate(1.4) contrast(1.06) brightness(1.2); }
+html.cin-lite .cin-word.shake { animation: none; }
+html.cin-lite .cin-food i { filter: none; }
+@media (max-width: 640px) { html.cin-lite .cin-leaf { filter: saturate(1.05) contrast(1.02) brightness(.72); } }
+
+/* ---- row of dishes that sits where the middle name used to be ---- */
+.cin-food { display: inline-flex; align-items: center; gap: .1em; padding: .02em 0 .06em; }
+.cin-food i {
+  display: block; width: .98em; height: .98em; transform-origin: 50% 70%;
+  filter: drop-shadow(0 .03em .05em rgba(0, 0, 0, .55)) drop-shadow(0 0 .09em rgba(255, 201, 77, .45));
+  transition: opacity .3s ease, transform .8s cubic-bezier(.3, 1.5, .5, 1);
+}
+.cin-food i svg { display: block; width: 100%; height: 100%; overflow: visible; }
+html.cin-js:not(.cin-done) .cin-food i:not(.in) { opacity: 0; transform: translateY(-1.5em) scale(.35) rotate(-55deg); }
+.cin-food i.in { animation: cinBob 1.6s ease-in-out .85s infinite; }
+.cin-food i:nth-child(even).in { animation-delay: 1.15s; }
+.cin-food.out i { opacity: 0 !important; transform: translateY(.45em) scale(.4) !important; animation: none !important; transition: opacity .25s ease, transform .3s ease; }
+@keyframes cinBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-.07em); } }
+html.cin-snap .cin-food i { transition: none !important; }
