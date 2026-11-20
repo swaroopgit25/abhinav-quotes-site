@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="./intro.css">
   <link rel="stylesheet" href="./menu-section.css">
   <link rel="stylesheet" href="./cursor.css">
+    <link rel="stylesheet" href="./polish.css">
 <link rel="preload" as="image" href="./assets/leaf-cutout.webp">
 <script>
   (function () {
@@ -39,6 +40,7 @@
 </head>
 
 <body>
+    <a class="skip" href="#home">Skip to content</a>
   <div class="noise"></div>
 
   <header class="nav">
@@ -46,11 +48,11 @@
       <img src="./assets/abhinav-logo.png" alt="Abhinav Caterers logo">
       <span class="brand-text">
         <strong>ABHINAV CATERERS</strong>
-        <small>artistry on plate, excellence at your table.</small>
+        <small>estd 2002</small>
       </span>
     </a>
     <nav>
-      <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#menu">Menu</a><a href="#contact">Contact</a>
+           <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#signature">Taste</a><a href="#menu">Menu</a><a href="#contact">Contact</a>
       <button class="nav-cta plan-btn" type="button">Plan an Event</button>
     </nav>
     <button class="menu-toggle" aria-label="Open navigation" onclick="document.querySelector('.nav nav').classList.toggle('open')">☰</button>
@@ -58,7 +60,7 @@
 
   <div id="landing">
 
-    <main id="home">
+    <main id="home" tabindex="-1">
 
       <section class="hero-cinema" id="cinema">
   <h1 class="sr-only">Abhinav Caterers: Pure Vegetarian Outdoor Catering in Hyderabad</h1>
@@ -75,7 +77,7 @@
 
   <div class="cin-sub">
     <div class="cin-sub-copy">
-      <p class="cin-tag">Celebrations, <em>served beautifully.</em></p>
+    <p class="cin-tag">Artistry on plate, <em>excellence at your table.</em></p>
       <p class="cin-loc">Pure Vegetarian · Outdoor Catering · Hyderabad</p>
     </div>
     <button class="primary plan-btn" type="button">Plan an Event <span>✦</span></button>
@@ -83,7 +85,7 @@
 
   <button class="cin-skip" type="button">Skip intro</button>
 </section>
-      <section class="marquee">
+      <section class="marquee" aria-hidden="true">
         <div>WEDDINGS ✦ RECEPTIONS ✦ HOUSE WARMINGS ✦ BIRTHDAYS ✦ CORPORATE EVENTS ✦ FESTIVALS ✦ PUJA & FUNCTIONS ✦</div>
       </section>
 
@@ -140,11 +142,45 @@
             </video>
             <div class="video-caption"><b>Made for every occasion</b><span>Pure vegetarian catering</span></div>
           </div>
+                  <div class="video-tile portrait"><video muted loop playsinline preload="metadata">
+              <source src="./assets/catering-4.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption"><b>Leaves laid out</b><span>Ready before the first guest arrives</span></div>
+          </div>
+          <div class="video-tile portrait"><video muted loop playsinline preload="metadata">
+              <source src="./assets/catering-5.mp4" type="video/mp4">
+            </video>
+            <div class="video-caption"><b>Served with care</b><span>Hot food, leaf by leaf</span></div>
+          </div>
         </div>
+      </section>
+      </section>
+
+            <section id="signature" class="section sig-block" aria-labelledby="sig-h">
+        <div class="section-label">03 / A TASTE OF THE MENU</div>
+        <div class="section-head">
+                    <h2 id="sig-h">Pull a <em>taste.</em></h2>
+          
+          <p>Swipe or drag the rail. Each taste opens it's category in the full menu.</p>
+        </div>
+        <div class="tk-modes" id="tk-modes" role="radiogroup" aria-label="Choose a menu">
+  <button type="button" role="radio" aria-checked="true" data-mode="standard" tabindex="0">Standard Menu</button>
+  <button type="button" role="radio" aria-checked="false" data-mode="all" tabindex="-1">All Events Menu</button>
+</div>
+        <div class="tk-wrap" id="tk-wrap" role="region" aria-roledescription="carousel"
+          aria-label="Tastes as kitchen tickets. Use the left and right arrow keys to move between tickets.">
+          <ul class="tk-rail" id="tk-rail"></ul>
+        </div>
+        <div class="tk-ctrl">
+          <button class="tk-arrow" id="tk-prev" type="button" aria-label="Previous ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <p class="tk-status" id="tk-status" aria-live="polite"></p>
+          <button class="tk-arrow" id="tk-next" type="button" aria-label="Next ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="tk-panel" id="tk-panel" hidden></div>
       </section>
 
             <section id="menu" class="section menu-block">
-        <div class="section-label">03 / OUR MENUS</div>
+        <div class="section-label">04 / OUR MENUS</div>
         <div class="section-head">
           <h2>Every dish, <em>made with care.</em></h2>
           <p>Pick a menu, browse by category or search for a dish. Telugu names included.</p>
@@ -164,9 +200,20 @@
           <a id="mn-pdf" class="outline" href="./assets/Abhinav-Caterers-Standard-Menu.pdf" download>Download PDF ↓</a>
         </div>
 
-        <div class="mn-cats" id="mn-cats"></div>
-        <div class="mn-list" id="mn-list"></div>
-        <p class="mn-count" id="mn-count"></p>
+        <div class="mn-cats" id="mn-cats" role="group" aria-label="Menu categories"></div>
+<div class="mn-drop" id="mn-drop">
+  <div class="mn-drop-in" id="mn-drop-in" inert>
+    <section class="mn-drop-card" aria-labelledby="mn-drop-title">
+      <header class="mn-drop-head">
+        <h3 id="mn-drop-title"></h3>
+        <small id="mn-drop-meta" aria-live="polite"></small>
+        <button class="mn-drop-close" id="mn-drop-close" type="button" aria-label="Close this category">✕</button>
+      </header>
+      <div class="mn-drop-scroll" id="mn-drop-scroll"><div class="mn-list" id="mn-list"></div></div>
+    </section>
+  </div>
+</div>
+<p class="mn-count" id="mn-count" aria-live="polite"></p>
 
         <div class="mn-cta">
           <p>Found your favourites? Build your plate and get a quote.</p>
@@ -177,7 +224,7 @@
       <section id="contact" class="section contact-section">
         <div class="contact-card">
           <div>
-            <div class="section-label">04 / LET'S PLAN</div>
+            <div class="section-label">05 / LET'S PLAN</div>
             <h2>Tell us what<br>you’re <em>celebrating.</em></h2>
             <p>Share a few details and the Abhinav Caterers team can take it from there.</p>
             <button class="primary plan-btn" type="button" style="margin-top:24px">Plan an Event <span>✦</span></button>
@@ -196,7 +243,7 @@
       <div class="footer-brand"><img src="./assets/abhinav-logo.png" alt="">
         <div><b>ABHINAV CATERERS</b><span>Artistry on a plate. Excellence at your table.</span></div>
       </div>
-      <div class="footer-links"><a href="#gallery">Gallery</a><a href="#contact">Contact</a></div>
+           <div class="footer-links"><a href="#about">About</a><a href="#gallery">Gallery</a><a href="#signature">Taste</a><a href="#menu">Menu</a><a href="#contact">Contact</a></div>
       <div class="copyright">© <span id="year"></span> Abhinav Caterers. Pure Veg & Outdoor Catering.</div>
     </footer>
 
@@ -216,9 +263,40 @@
         <label>Event type<select id="q-type"></select></label>
         <label>Event date<input id="q-date" type="date"></label>
         <label>Meal<select id="q-meal"></select></label>
-        <label>Event time<select id="q-time"></select></label>
-        <label>Guests<select id="q-guestsel"></select></label>
-        <label>No. of guests<input id="q-guests" type="number" min="1"></label>
+                <label>Event time<select id="q-time"></select></label>
+        <label>Number of guests<input id="q-guests" type="number" min="1" inputmode="numeric" placeholder="e.g. 150"></label>
+      </div>
+
+      
+      </svg>
+      <div class="qf-grid">
+        
+
+        <div class="qf-pair wide">
+          <div class="qf-field">
+            <span class="qf-legend" id="qs-staff-l">Service boys</span>
+            <div class="qs-step" role="group" aria-labelledby="qs-staff-l">
+              <button type="button" id="q-staff-minus" aria-label="One fewer service boy">&minus;</button>
+              <input id="q-staff" type="number" min="0" max="99" value="0" inputmode="numeric" aria-labelledby="qs-staff-l">
+              <button type="button" id="q-staff-plus" aria-label="One more service boy">+</button>
+            </div>
+            <p class="qf-help">Not sure? Leave it at 0 and we’ll suggest a number for your guests.</p>
+          </div>
+          <fieldset class="qf-set">
+            <legend>Pickup or delivery</legend>
+            <div class="qs-two">
+              <label class="qs-opt"><input type="radio" name="q-fulfil" value="Delivery by us" checked><span class="qs-card">
+                <b>Delivery by us</b><small>We bring it to your address</small></span></label>
+              <label class="qs-opt"><input type="radio" name="q-fulfil" value="Self pickup"><span class="qs-card">
+                <b>Self pickup</b><small>You collect it from us</small></span></label>
+            </div>
+            <p class="qf-help" id="qs-fulfil-note" aria-live="polite"></p>
+          </fieldset>
+        </div>
+
+        <label class="wide">Special requests
+          <textarea id="q-notes" rows="3" maxlength="500" placeholder="e.g. no onion or garlic, serve sweets first, a few guests are diabetic…"></textarea>
+        </label>
       </div>
     </form>
     <div class="builder">
@@ -229,7 +307,50 @@
       </aside>
       <div class="stage">
         <div class="tabs" id="vessel-switch"></div>
-        <svg id="vessel" viewBox="0 0 600 600" role="img" aria-label="Your plate"></svg>
+                <svg id="vessel" viewBox="0 0 600 600" role="img" aria-label="Your plate"></svg>
+
+        <fieldset class="spice-meter" id="spice-scale" data-level="1">
+          <legend>Spice level</legend>
+          <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+            <symbol id="sp-chili" viewBox="0 0 32 32">
+              <path d="M21 9.5C13 9 7 15 4 27.5c-.2 1.1.8 1.7 1.8 1.3C14.5 25.5 24.5 20 26.2 13.3 26.6 11.4 24 9.9 21 9.5Z" fill="#ea0406"/>
+              <path d="M19.5 11C19 8.8 20.6 7.8 22.6 8.4 25 9 26.8 10.6 26.4 13.2 24.6 11.6 22 11.2 19.5 11Z" fill="#62bb3b"/>
+              <path d="M22.5 8.6C22.9 6.8 24.2 5.6 26.2 5.2" fill="none" stroke="#62bb3b" stroke-width="2.4" stroke-linecap="round"/>
+            </symbol>
+          </svg>
+          <p class="sp-hint">How spicy should the food be?</p>
+          <div class="sp-grid">
+            <label class="sp-opt l1">
+              <input type="radio" name="q-spice" value="Mild">
+              <span class="sp-card">
+                <span class="sp-chilies" aria-hidden="true"><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg></span>
+                <b>Mild</b><small>Gentle, family friendly</small>
+              </span>
+            </label>
+            <label class="sp-opt l2">
+              <input type="radio" name="q-spice" value="Medium" checked>
+              <span class="sp-card">
+                <span class="sp-chilies" aria-hidden="true"><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg></span>
+                <b>Medium</b><small>Balanced, our usual</small>
+              </span>
+            </label>
+            <label class="sp-opt l3">
+              <input type="radio" name="q-spice" value="Hot">
+              <span class="sp-card">
+                <span class="sp-chilies" aria-hidden="true"><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg></span>
+                <b>Hot</b><small>Proper Andhra heat</small>
+              </span>
+            </label>
+            <label class="sp-opt l4">
+              <input type="radio" name="q-spice" value="Extra hot">
+              <span class="sp-card">
+                <span class="sp-chilies" aria-hidden="true"><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg><svg class="sp-c"><use href="#sp-chili"/></svg></span>
+                <b>Extra hot</b><small>Bring the fire</small>
+              </span>
+            </label>
+          </div>
+          <p class="sp-read" aria-live="polite"></p>
+        </fieldset>
       </div>
     </div>
     <div id="app"></div>
@@ -239,6 +360,7 @@
   <button class="primary" id="quote-btn" type="button">Get my quotation <span>✦</span></button>
   <p id="quote-msg"></p>
 </div>
+<div class="quote-result" id="quote-result" hidden></div>
   </section>
 
   <script src="menu.js"></script>
@@ -251,8 +373,13 @@
   <script src="landing.js"></script>
   <script src="intro.js"></script>   <!-- add this line -->
   <script src="app.js"></script>
-    <script src="quote-form.js"></script>
+        <script src="quote-form.js"></script>
+    <script src="quote-picker.js"></script>   <!-- NEW -->
+    <script src="tickets.js"></script>        <!-- NEW -->
     <script src="cursor.js"></script>
+    <script src="polish.js"></script>         <!-- NEW -->
+        <script src="gallery-drag.js"></script>
+    <script src="spice-scale.js"></script>
 </body>
 
 </html>

@@ -1016,3 +1016,18 @@ html.locked #siteGate { display: flex; position: fixed; inset: 0; align-items: c
 .dish-letter.active { background: var(--gold); color: #10251e; }
 /* letter badge: every letter starts on a new row */
 .dish-letterhead { grid-column: 1 / -1; justify-self: start; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin: 14px 0 4px 4px; border-radius: 10px; background: rgba(255,255,255,.07); color: var(--gold); font-size: 16px; font-weight: 800; }
+
+/* "ESTD 2002" under the brand name */
+.brand-text small {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Sans', sans-serif; font-style: normal; font-weight: 500;
+  font-size: 11px; letter-spacing: .38em; text-transform: uppercase;
+  color: var(--gold); margin-top: 9px;
+}
+.brand-text small::before, .brand-text small::after {
+  content: ''; width: 22px; height: 1px; background: var(--gold); opacity: .6;
+}
+@media (max-width: 560px) {
+  .brand-text small { font-size: 9px; letter-spacing: .3em; gap: 7px; margin-top: 5px; }
+  .brand-text small::before, .brand-text small::after { width: 12px; }
+}

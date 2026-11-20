@@ -12,9 +12,9 @@
     'Saree':             { cats: ['Sweets', 'Saree Items', 'Special Items'], from: '09:00', to: '21:00' }
     
   };
+    window.MEALS = MEALS;   // read by quote-picker.js for the meal tiles
   const EVENTS = ['Wedding / Reception', 'Engagement', 'Birthday Party', 'Housewarming', 'Baby Shower / Seemantham',
     'Saree / Half Saree Function', 'Pooja / Festival', 'Corporate Event', 'Other'];
-  const GUESTS = ['Manual', 50, 100, 150, 200, 300, 400, 500, 750, 1000];
   const WHATSAPP = '917794093779';
 
   function fill(sel, values, placeholder) {
@@ -40,7 +40,7 @@
   // ---- fill the dropdowns ----
   fill($('q-type'), EVENTS);
   fill($('q-meal'), Object.keys(MEALS));
-  fill($('q-guestsel'), GUESTS);
+
   const today = new Date();
   $('q-date').min = today.toISOString().slice(0, 10);
   $('q-date').value = today.toISOString().slice(0, 10);
@@ -54,19 +54,36 @@
   $('q-meal').addEventListener('change', onMeal);
   onMeal();
 
-  // guests preset fills the number box; "Manual" lets the customer type
-  $('q-guestsel').addEventListener('change', function () {
-    const v = $('q-guestsel').value;
-    if (v === 'Manual') { $('q-guests').value = ''; $('q-guests').focus(); }
-    else $('q-guests').value = v;
-  });
+   // ---- service & preferences ----
+  const pickedValue = function (name) { const r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ''; };
+  const staffText = function (n) { return +n > 0 ? String(+n) : 'Please suggest'; };
+
+  // service boys: - / + buttons, always a whole number from 0 to 99
+  const staff = $('q-staff');
+  function setStaff(n) { n = Math.round(+n); staff.value = Math.max(0, Math.min(99, isNaN(n) ? 0 : n)); }
+  $('q-staff-minus').addEventListener('click', function () { setStaff(+staff.value - 1); });
+  $('q-staff-plus').addEventListener('click', function () { setStaff(+staff.value + 1); });
+  staff.addEventListener('change', function () { setStaff(staff.value); });
+
+  // pickup or delivery: a short note under the choice. EDIT THE PICKUP ADDRESS HERE.
+  const PICKUP_ADDRESS = '5-1-45, Saheb Nagar, Vanasthalipuram, Hyderabad – 500070';
+  function fulfilNote() {
+    const delivery = pickedValue('q-fulfil') === 'Delivery by us';
+    $('qs-fulfil-note').textContent = !delivery ? 'Collect from ' + PICKUP_ADDRESS + '.'
+      : ($('q-address').value.trim() ? 'We’ll deliver to the address above.' : 'Please add your delivery address above.');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="q-fulfil"]'), function (r) { r.addEventListener('change', fulfilNote); });
+  $('q-address').addEventListener('input', fulfilNote);
+  fulfilNote();
 
   // ---- build the quotation ----
   function readForm() {
     return {
       name: $('q-name').value.trim(), phone: $('q-phone').value.trim(), email: $('q-email').value.trim(),
       address: $('q-address').value.trim(), eventType: $('q-type').value, date: $('q-date').value,
-      meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value
+            meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value,
+      spice: pickedValue('q-spice'), staff: $('q-staff').value, fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim()
+    
     };
   }
   function dishLines(picked) {
@@ -127,7 +144,9 @@
 
     let text = 'Quotation request - Abhinav Caterers\n\nName: ' + d.name + '\nPhone: ' + d.phone
       + (d.email ? '\nEmail: ' + d.email : '') + (d.address ? '\nAddress: ' + d.address : '')
-      + '\nEvent: ' + d.eventType + '\nDate: ' + d.date;
+           + '\nEvent: ' + d.eventType + '\nDate: ' + d.date
+      + '\nSpice level: ' + d.spice + '\nService boys: ' + staffText(d.staff) + '\nPickup / delivery: ' + d.fulfil
+      + (d.notes ? '\nSpecial requests: ' + d.notes : ''); + '\nEvent: ' + d.eventType + '\nDate: ' + d.date;
     meals.forEach(function (m) {
       text += '\n\n' + title(m) + ':\n' + m.lines.map(function (l) { return l[0] + ': ' + l[1]; }).join('\n');
     });
@@ -136,10 +155,13 @@
     box.innerHTML = '';
     box.appendChild(el('h3', '', 'Your quotation request'));
     const grid = el('div', 'qr-grid');
-    [['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date]].forEach(function (r) {
+       [['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date],
+      ['Spice level', d.spice], ['Service boys', staffText(d.staff)], ['Pickup / delivery', d.fulfil]].forEach(function (r) {
       const c = el('div'); c.appendChild(el('small', '', r[0])); c.appendChild(el('b', '', r[1])); grid.appendChild(c);
     });
     box.appendChild(grid);
+        box.appendChild(grid);
+    if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     meals.forEach(function (m) {
       box.appendChild(el('h4', '', title(m)));
       m.lines.forEach(function (l) {

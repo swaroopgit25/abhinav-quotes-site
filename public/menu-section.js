@@ -1,4 +1,5 @@
-/* Menu section: Standard Menu + All Events Menu, built from menu.js and menu-te.js */
+/* Menu section: Standard Menu + All Events Menu, built from menu.js and menu-te.js.
+   A category chip opens a dropdown panel with that category's dishes. */
 (function () {
   var MENU = window.MENU || [], TE = window.MENU_TE || {};
   var tabs = document.getElementById('mn-tabs');
@@ -7,15 +8,26 @@
   var countBox = document.getElementById('mn-count');
   var search = document.getElementById('mn-search');
   var pdfLink = document.getElementById('mn-pdf');
-  if (!MENU.length || !tabs || !chipsBox || !listBox || !search) return;
+  var drop = document.getElementById('mn-drop');
+  var dropIn = document.getElementById('mn-drop-in');
+  var dropTitle = document.getElementById('mn-drop-title');
+  var dropMeta = document.getElementById('mn-drop-meta');
+  var dropClose = document.getElementById('mn-drop-close');
+  var dropScroll = document.getElementById('mn-drop-scroll');
+  if (!MENU.length || !tabs || !chipsBox || !listBox || !search || !drop) return;
 
-  /* Which categories each menu shows, in the same order as the printed PDFs.
-     ['Real category name', 'Name to show'] renames a heading. */
+  /* plan (standard only) = how the standard menu is ordered, e.g. "2- Hot" = 2 hot snacks.
+     The ticket rail reads these same lists. */
   var SETS = {
     standard: {
       pdf: './assets/Abhinav-Caterers-Standard-Menu.pdf',
       cats: ['Sweets', 'Hot Snacks', 'Rice', 'Biryani Rice', 'South Indian Curries',
-             'North Indian Curries', 'Dal Items', ['South Indian Liquids', 'Sambar (Liquids)'], 'Default Items']
+             'North Indian Curries', 'Dal Items', ['South Indian Liquids', 'Sambar (Liquids)'], 'Default Items'],
+      plan: {
+        'Sweets': '1- Sweet', 'Hot Snacks': '2- Hot', 'Rice': '1- Plain Rice', 'Biryani Rice': '1- Biryani Rice',
+        'South Indian Curries': '1- South Indian Curry', 'North Indian Curries': '1- North Indian Curry',
+        'Dal Items': '1- Dal', 'South Indian Liquids': '1- Liquid', 'Default Items': 'Default Items'
+      }
     },
     all: {
       pdf: './assets/Abhinav-Caterers-All-Events-Menu.pdf',
@@ -41,26 +53,33 @@
     }).filter(function (c) { return c.items.length; });
   }
 
-  var menuKey = 'standard', catIdx = 0;
+  var HINT = 'Choose a category above to open its dishes.';
+  var menuKey = 'standard', openIdx = null;   // openIdx null = dropdown closed
 
   function itemHtml(name, n, i) {
     var te = TE[name] || '';
     return '<div class="mn-item" style="--i:' + i + '"><span class="n">' + n + '</span><span>' +
       '<span class="en">' + esc(name) + '</span>' +
-      (te ? '<span class="te">' + esc(te) + '</span>' : '') + '</span></div>';
+      (te ? '<span class="te" lang="te">' + esc(te) + '</span>' : '') + '</span></div>';
+  }
+
+  function setOpen(on) {
+    drop.classList.toggle('open', on);
+    if (on) dropIn.removeAttribute('inert'); else dropIn.setAttribute('inert', '');
   }
 
   function render() {
     var cats = catsOf(menuKey);
-    if (catIdx >= cats.length) catIdx = 0;
+    if (openIdx !== null && openIdx >= cats.length) openIdx = null;
     var q = search.value.trim().toLowerCase();
 
     chipsBox.innerHTML = cats.map(function (c, i) {
-      return '<button type="button" class="mn-chip' + (!q && i === catIdx ? ' active' : '') + '" data-i="' + i + '">' +
-        esc(c.label) + '<small>' + c.items.length + '</small></button>';
+      var on = !q && i === openIdx;
+      return '<button type="button" class="mn-chip' + (on ? ' active' : '') + '" data-i="' + i + '" aria-expanded="' + on +
+        '" aria-controls="mn-drop">' + esc(c.label) + '<small>' + c.items.length + '</small></button>';
     }).join('');
 
-    var html = '', shown = 0;
+    var html = '', title = '', meta = '', shown = 0;
     if (q) {                                   // searching: look through every category of this menu
       cats.forEach(function (c) {
         var rows = '', k = 0;
@@ -71,37 +90,85 @@
         if (rows) { html += '<h3 class="mn-group">' + esc(c.label) + '</h3>' + rows; shown += k; }
       });
       if (!shown) html = '<p class="mn-empty">No dish found for “' + esc(search.value.trim()) + '”. Try another spelling.</p>';
-      countBox.textContent = shown ? shown + (shown > 1 ? ' dishes found' : ' dish found') : '';
-    } else {                                   // normal: one category at a time
-      var cat = cats[catIdx];
+      title = 'Search results';
+      meta = shown ? shown + (shown > 1 ? ' dishes found' : ' dish found') : 'No matches';
+    } else if (openIdx !== null) {             // one category, in the dropdown
+      var cat = cats[openIdx];
       html = cat.items.map(function (name, idx) { return itemHtml(name, idx + 1, idx); }).join('');
-      countBox.textContent = cat.label + ': ' + cat.items.length + ' dishes';
+      title = cat.label;
+      meta = cat.items.length + ' dishes';
     }
-    listBox.innerHTML = html;
+
+    if (q || openIdx !== null) {               // fill first, then open, so the panel never opens empty
+      dropTitle.textContent = title;
+      dropMeta.textContent = meta;
+      listBox.innerHTML = html;
+      dropScroll.scrollTop = 0;
+      countBox.textContent = '';
+      setOpen(true);
+    } else {                                   // closed: keep old content until the panel has folded away
+      countBox.textContent = HINT;
+      setOpen(false);
+    }
+  }
+
+  function setMenu(key) {
+    menuKey = key;
+    openIdx = null;
+    Array.prototype.forEach.call(tabs.querySelectorAll('.mn-tab'), function (t) {
+      var on = t.getAttribute('data-menu') === key;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (pdfLink) pdfLink.href = SETS[key].pdf;
   }
 
   tabs.addEventListener('click', function (e) {
     var b = e.target.closest('.mn-tab');
     if (!b) return;
-    menuKey = b.getAttribute('data-menu');
-    catIdx = 0;
-    Array.prototype.forEach.call(tabs.querySelectorAll('.mn-tab'), function (t) {
-      var on = (t === b);
-      t.classList.toggle('active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    if (pdfLink) pdfLink.href = SETS[menuKey].pdf;
+    setMenu(b.getAttribute('data-menu'));
     render();
   });
 
   chipsBox.addEventListener('click', function (e) {
     var b = e.target.closest('.mn-chip');
     if (!b) return;
-    catIdx = +b.getAttribute('data-i');
+    var i = +b.getAttribute('data-i');
+    openIdx = (openIdx === i && !search.value.trim()) ? null : i;   // the open chip closes its own dropdown
     search.value = '';
     render();
+    var again = chipsBox.querySelector('[data-i="' + i + '"]');     // keep keyboard focus on the chip
+    if (again) again.focus({ preventScroll: true });
   });
 
+  function closeDrop(focusChip) {
+    var was = openIdx;
+    openIdx = null;
+    search.value = '';
+    render();
+    if (focusChip && was !== null) {
+      var c = chipsBox.querySelector('[data-i="' + was + '"]');
+      if (c) c.focus({ preventScroll: true });
+    }
+  }
+  if (dropClose) dropClose.addEventListener('click', function () { closeDrop(true); });
+  drop.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrop(true); });
+
   search.addEventListener('input', render);
+
+  /* Used by the ticket rail's "See in full menu": switch menu, open that category's dropdown. */
+  window.MenuSection = {
+    sets: SETS,
+    open: function (key, catName) {
+      if (!SETS[key]) return;
+      if (key !== menuKey) setMenu(key);
+      search.value = '';
+      var cats = catsOf(key), at = null;
+      cats.forEach(function (c, i) { if (c.name === catName) at = i; });
+      openIdx = at;
+      render();
+    }
+  };
+
   render();
 })();

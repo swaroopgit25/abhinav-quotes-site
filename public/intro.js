@@ -566,9 +566,9 @@ window.scrollTo(0, 0);
     watch(ms);
     step(Math.min(0.1, ms / 1000));
   }
+  var SPEED = 1.5;   // 1 = old speed, 1.5 = 50% faster, 2 = twice as fast
   function step(dt) {
-    t += dt;
-    while (cueIdx < cues.length && cues[cueIdx][0] <= t) { var fn = cues[cueIdx][1]; cueIdx++; fn(); }
+    t += dt * SPEED;    while (cueIdx < cues.length && cues[cueIdx][0] <= t) { var fn = cues[cueIdx][1]; cueIdx++; fn(); }
     if (scr.length) tickMorph();
     ctx.clearRect(0, 0, W, H);
     drawFx(dt);
@@ -609,21 +609,19 @@ window.scrollTo(0, 0);
     if (started || done) return;
     started = true;
     size();
-    initMotes();
-    loadSprites();
-    initFall();
+        initMotes();
     buildWord('ABHINAV', false);
-        word.classList.add('drop');               // the I falls first, the other letters grow out of it
+    word.classList.add('drop');
     slots.forEach(function (el, i) {
-            el.style.setProperty('--dx', ((i - 3) * 1.6) + 'em');
+      el.style.setProperty('--dx', ((i - 3) * 1.6) + 'em');
       if (i === 3) el.classList.add('seed');
     });
     buildTop(false);
-   
-        cues = [
+
+    cues = [
       [0.05, function () { glow.classList.add('on'); }],
-     [0.12, startComet],
-      [0.9,  impact],            // safety net: the comet's own animationend normally fires this first
+      [0.12, startComet],
+      [0.9,  impact],
       [0.82, function () { showSlot(2); showSlot(4); }],
       [0.94, function () { showSlot(1); showSlot(5); }],
       [1.06, function () { showSlot(0); showSlot(6); }],
@@ -635,24 +633,15 @@ window.scrollTo(0, 0);
       [2.1,  clearFx],
       [1.0,  buildParticles],
       [2.2,  function () { word.classList.add('leave'); }],
-      [2.35, showFood],
-      [2.4,  function () { popFood(0); }],
-      [2.55, function () { popFood(1); }],
-      [2.7,  function () { popFood(2); }],
-      [2.85, function () { popFood(3); }],
-      [3.0,  function () { popFood(4); }],
-      [3.15, function () { popFood(5); }],
-      [3.3,  function () { popFood(6); }],
-      [3.5,  hideFood],
-      [3.6,  buildCaterers],
-      [3.62, function () { showSlot(0); }],
-      [3.69, function () { showSlot(1); }],
-      [3.76, function () { showSlot(2); }],
-      [3.83, function () { showSlot(3); }],
-      [3.9,  function () { showSlot(4); }],
-      [3.97, function () { showSlot(5); }],
-      [4.04, function () { showSlot(6); }],
-      [4.11, function () { showSlot(7); }],
+      [2.6,  buildCaterers],
+      [2.62, function () { showSlot(0); }],
+      [2.69, function () { showSlot(1); }],
+      [2.76, function () { showSlot(2); }],
+      [2.83, function () { showSlot(3); }],
+      [2.9,  function () { showSlot(4); }],
+      [2.97, function () { showSlot(5); }],
+      [3.04, function () { showSlot(6); }],
+      [3.11, function () { showSlot(7); }],
       [4.3,  function () { title.classList.add('docked'); }],
       [4.4,  function () { root.classList.add('cin-navin'); root.classList.remove('cin-lock'); }],
       [4.55, function () { root.classList.add('cin-subin'); moteOn = true; }],
@@ -667,7 +656,7 @@ window.scrollTo(0, 0);
       [END_AT, finish]
     ];
     cues.sort(function (a, b) { return a[0] - b[0]; });
-        buildParticles();                 // heavy job: done now, while the screen is still dark, so it can never stall the show
+    buildParticles();
     cueIdx = 0; t = 0;
     resume();
   }

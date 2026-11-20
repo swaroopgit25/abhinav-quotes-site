@@ -59,7 +59,8 @@
         else v.pause();
       });
     }, { threshold: .25 });
-    document.querySelectorAll('.video-tile video').forEach(function (v) { vio.observe(v); });
+       var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;   // reduced motion: videos wait for the visitor
+    if (!calm) document.querySelectorAll('.video-tile video').forEach(function (v) { vio.observe(v); });
   }
     // marquee: repeat the text so the strip never runs empty
   var mq = document.querySelector('.marquee div');
