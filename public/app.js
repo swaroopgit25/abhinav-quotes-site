@@ -95,7 +95,8 @@ function showGroup(group) {
 
   list.innerHTML = '';
     visibleDishes(group).forEach(function (d) {
-    const key = keyOf(group.zone, d.en);
+        const zone = group.zone || zoneOfCat(d.cat);   // the "All" tab has no single zone
+    const key = keyOf(zone, d.en);
     const chip = document.createElement('button');
     chip.className = 'chip' + (pickedIndex(key) >= 0 ? ' selected' : '');
     chip.type = 'button';
@@ -104,7 +105,7 @@ function showGroup(group) {
         const pic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');   // little picture of the dish
     pic.setAttribute('viewBox', '-21 -21 42 42');
     pic.setAttribute('class', 'chip-pic');
-      pic.innerHTML = window.foodArt(d.en, group.zone, d.cat);
+      pic.innerHTML = window.foodArt(d.en, zone, d.cat);
     chip.appendChild(pic);
 
     const en = document.createElement('span');
@@ -116,7 +117,7 @@ function showGroup(group) {
       te.textContent = d.te;
       chip.appendChild(te);
     }
-    chip.addEventListener('click', function () { togglePick(d, group.zone); });
+    chip.addEventListener('click', function () { togglePick(d, zone); });
     list.appendChild(chip);
   });
 }
@@ -126,6 +127,28 @@ function visibleDishes(group) {
     return !state.allowed || state.allowed.indexOf(d.cat) >= 0;
   });
 }
+
+// ---- one tab per menu category of the chosen meal, plus "All" ----
+function zoneOfCat(cat) {
+  const g = window.GROUPS.find(function (x) { return x.cats.indexOf(cat) >= 0; });
+  return g ? g.zone : 'starter';
+}
+function buildTabs() {
+  tabs.innerHTML = '';
+  const cats = window.MENU.map(function (c) { return c.category; })
+    .filter(function (c) { return !state.allowed || state.allowed.indexOf(c) >= 0; })
+    .sort(function (a, b) { return (a === 'Water Bottles') - (b === 'Water Bottles'); });   // water bottles last
+  const groups = cats.map(function (c) { return { id: 'cat:' + c, label: c, zone: zoneOfCat(c), cats: [c] }; });
+  if (groups.length > 1) groups.unshift({ id: 'all', label: 'All', zone: null, cats: cats });
+  groups.forEach(function (g) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tab'; b.dataset.id = g.id; b.textContent = g.label;
+    b.addEventListener('click', function () { showGroup(g); });
+    tabs.appendChild(b);
+  });
+  showGroup(groups[0]);
+}
+
 window.setMealFilter = function (cats, meal) {
   const mealChanged = (meal || '') !== state.meal;
   state.allowed = cats;
@@ -134,13 +157,7 @@ window.setMealFilter = function (cats, meal) {
   const plates = availableVessels();
 if (mealChanged || plates.indexOf(state.vessel) < 0) state.vessel = plates[0];   // first plate of the meal (banana leaf for lunch and dinner)
 buildSwitch();   // glasses <-> plates for this meal
-let first = null;
-  Array.from(tabs.children).forEach(function (b, i) {
-    const has = visibleDishes(window.GROUPS[i]).length > 0;
-    b.hidden = !has;
-    if (has && !first) first = window.GROUPS[i];
-  });
-  if (first) showGroup(first);
+buildTabs();   // one tab per category of this meal
   if (state.drink) redrawDishes('*'); else showVessel(state.vessel);
 };
 window.getPicked = function () { return picked; };

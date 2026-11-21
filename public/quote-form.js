@@ -1,14 +1,17 @@
 (function () {
   const $ = function (id) { return document.getElementById(id); };
-  const ALL = null; // null = show every dish category
+    // Lunch and Dinner share one list (no Fruit Juices, no Saree Items). EDIT HERE.
+  const MAIN_MEAL = ['Sweets', 'Hot Snacks', 'Snacks', 'Roti', 'Rice', 'Biryani Rice', 'North Indian Curries',
+    'South Indian Curries', 'South Indian Fry', 'South Indian Liquids', 'Dal Items', 'Raitas', 'Chat Items', 'Soups',
+    'Pickles & Chutneys', 'Podulu', 'Tiffins', 'Hot Drinks', 'Ice Creams', 'Special Items', 'Default Items', 'Water Bottles'];
 
   // Meal -> which dish categories to show, and the time range for Event time. EDIT HERE.
   const MEALS = {
     'Welcome Drinks':    { cats: ['Fruit Juices & Fruit Chat'], from: '10:00', to: '21:00' },
     'Breakfast': { cats: ['Sweets', 'South Indian Liquids', 'Pickles & Chutneys', 'Podulu', 'Tiffins', 'Hot Drinks', 'Default Items', 'Water Bottles'], from: '06:00', to: '11:00' },
-    'Lunch':             { cats: ALL, from: '11:00', to: '15:00' },
-    'Snacks / High Tea': { cats: ['Hot Snacks', 'Chat Items', 'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Special Items', 'Default Items', 'Water Bottles'], from: '16:00', to: '19:00' },
-    'Dinner':            { cats: ALL, from: '19:00', to: '23:00' },
+    'Lunch':             { cats: MAIN_MEAL, from: '11:00', to: '15:00' },
+    'Snacks / High Tea': { cats: ['Sweets', 'Hot Snacks', 'Chat Items', 'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Special Items', 'Default Items', 'Water Bottles'], from: '16:00', to: '19:00' },
+    'Dinner':            { cats: MAIN_MEAL, from: '19:00', to: '23:00' },
     'Saree':             { cats: ['Sweets', 'Saree Items', 'Special Items'], from: '09:00', to: '21:00' }
     
   };
@@ -56,6 +59,13 @@
 
    // ---- service & preferences ----
   const pickedValue = function (name) { const r = document.querySelector('input[name="' + name + '"]:checked'); return r ? r.value : ''; };
+  const checkedValues = function (name) { return Array.prototype.map.call(document.querySelectorAll('input[name="' + name + '"]:checked'), function (c) { return c.value; }); };
+const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
+
+  const extrasText = function (d) {
+    const out = d.extras.map(function (e) { return e === 'Live counter' && d.live.length ? 'Live counter (' + d.live.join(', ') + ')' : e; });
+    return out.length ? out.join(', ') : 'None';
+  };
   const staffText = function (n) { return +n > 0 ? String(+n) : 'Please suggest'; };
 
   // service boys: - / + buttons, always a whole number from 0 to 99
@@ -82,7 +92,8 @@
       name: $('q-name').value.trim(), phone: $('q-phone').value.trim(), email: $('q-email').value.trim(),
       address: $('q-address').value.trim(), eventType: $('q-type').value, date: $('q-date').value,
             meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value,
-      spice: pickedValue('q-spice'), staff: $('q-staff').value, fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim()
+      spice: pickedValue('q-spice'), staff: $('q-staff').value, fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim(),
+      style: pickedValue('q-style'), extras: checkedValues('q-extra'), live: checkedValues('q-live')
     
     };
   }
@@ -145,8 +156,9 @@
     let text = 'Quotation request - Abhinav Caterers\n\nName: ' + d.name + '\nPhone: ' + d.phone
       + (d.email ? '\nEmail: ' + d.email : '') + (d.address ? '\nAddress: ' + d.address : '')
            + '\nEvent: ' + d.eventType + '\nDate: ' + d.date
-      + '\nSpice level: ' + d.spice + '\nService boys: ' + staffText(d.staff) + '\nPickup / delivery: ' + d.fulfil
-      + (d.notes ? '\nSpecial requests: ' + d.notes : ''); + '\nEvent: ' + d.eventType + '\nDate: ' + d.date;
+            + '\nSpice level: ' + d.spice + '\nService boys: ' + staffText(d.staff) + '\nPickup / delivery: ' + d.fulfil
+           + '\nServing style: ' + d.style + '\nExtras: ' + extrasText(d)
+      + (d.notes ? '\nSpecial requests: ' + d.notes : '');
     meals.forEach(function (m) {
       text += '\n\n' + title(m) + ':\n' + m.lines.map(function (l) { return l[0] + ': ' + l[1]; }).join('\n');
     });

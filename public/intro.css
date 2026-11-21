@@ -156,6 +156,9 @@ html.cin-snap .cin-leaf, html.cin-snap .cin-glow, html.cin-snap .cin-bang { tran
 @media (max-height: 560px) and (orientation: landscape) {
   .cin-tag { font-size: 20px; }
   .cin-loc { display: none; }
+  /* a phone held sideways: fit the whole hero, tagline and button included, on one screen */
+  .hero-cinema { min-height: 0; --fs: clamp(34px, 12vh, 64px); --ty: calc(100% - 118px - var(--fs) * .45); }
+  .cin-sub { bottom: 14px; }
 }
 
 /* marquee strip: seamless loop */

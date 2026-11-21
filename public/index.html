@@ -249,11 +249,14 @@
 
   </div>
 
-  <section class="planner" id="planner" hidden>
+   <section class="planner" id="planner" hidden>
     <button class="back" id="back-btn" type="button">← Back</button>
     <h2>Plan your event</h2>
-    <p class="sub">Pick a plate, then choose your dishes.</p>
-        <form class="quote-form" id="quote-form" autocomplete="off" onsubmit="return false">
+    <p class="sub">Tell us about your event, pick your dishes, then choose the service.</p>
+
+    <!-- STEP 1: event details -->
+    <form class="quote-form" id="quote-form" autocomplete="off" onsubmit="return false">
+      <p class="step-no">Step 1</p>
       <h3>Event details</h3>
       <div class="qf-grid">
         <label>Customer name<input id="q-name" type="text"></label>
@@ -263,42 +266,17 @@
         <label>Event type<select id="q-type"></select></label>
         <label>Event date<input id="q-date" type="date"></label>
         <label>Meal<select id="q-meal"></select></label>
-                <label>Event time<select id="q-time"></select></label>
+        <label>Event time<select id="q-time"></select></label>
         <label>Number of guests<input id="q-guests" type="number" min="1" inputmode="numeric" placeholder="e.g. 150"></label>
       </div>
-
-      
-      </svg>
-      <div class="qf-grid">
-        
-
-        <div class="qf-pair wide">
-          <div class="qf-field">
-            <span class="qf-legend" id="qs-staff-l">Service boys</span>
-            <div class="qs-step" role="group" aria-labelledby="qs-staff-l">
-              <button type="button" id="q-staff-minus" aria-label="One fewer service boy">&minus;</button>
-              <input id="q-staff" type="number" min="0" max="99" value="0" inputmode="numeric" aria-labelledby="qs-staff-l">
-              <button type="button" id="q-staff-plus" aria-label="One more service boy">+</button>
-            </div>
-            <p class="qf-help">Not sure? Leave it at 0 and we’ll suggest a number for your guests.</p>
-          </div>
-          <fieldset class="qf-set">
-            <legend>Pickup or delivery</legend>
-            <div class="qs-two">
-              <label class="qs-opt"><input type="radio" name="q-fulfil" value="Delivery by us" checked><span class="qs-card">
-                <b>Delivery by us</b><small>We bring it to your address</small></span></label>
-              <label class="qs-opt"><input type="radio" name="q-fulfil" value="Self pickup"><span class="qs-card">
-                <b>Self pickup</b><small>You collect it from us</small></span></label>
-            </div>
-            <p class="qf-help" id="qs-fulfil-note" aria-live="polite"></p>
-          </fieldset>
-        </div>
-
-        <label class="wide">Special requests
-          <textarea id="q-notes" rows="3" maxlength="500" placeholder="e.g. no onion or garlic, serve sweets first, a few guests are diabetic…"></textarea>
-        </label>
-      </div>
     </form>
+
+    <!-- STEP 2: the dish animation -->
+    <div class="step-head" data-reveal="up">
+      <p class="step-no">Step 2</p>
+      <h3>Pick your dishes</h3>
+      <p class="qf-help">Choose dishes from the list. They land on the plate as you tap.</p>
+    </div>
     <div class="builder">
       <aside class="items-panel">
         <h3>Items</h3>
@@ -307,8 +285,45 @@
       </aside>
       <div class="stage">
         <div class="tabs" id="vessel-switch"></div>
-                <svg id="vessel" viewBox="0 0 600 600" role="img" aria-label="Your plate"></svg>
+        <svg id="vessel" viewBox="0 0 600 600" role="img" aria-label="Your plate"></svg>
+      </div>
+    </div>
 
+    <!-- STEPS 3 to 7 -->
+    <div class="svc">
+
+      <section class="quote-form svc-block" data-reveal="left">
+        <p class="step-no">Step 3</p>
+        <h3>Service boys</h3>
+        <div class="qf-grid">
+          <div class="qf-field wide">
+            <span class="qf-legend" id="qs-staff-l">How many service boys?</span>
+            <div class="qs-step" role="group" aria-labelledby="qs-staff-l">
+              <button type="button" id="q-staff-minus" aria-label="One fewer service boy">&minus;</button>
+              <input id="q-staff" type="number" min="0" max="99" value="0" inputmode="numeric" aria-labelledby="qs-staff-l">
+              <button type="button" id="q-staff-plus" aria-label="One more service boy">+</button>
+            </div>
+            <div class="crew" id="crew" aria-hidden="true"></div>
+            <p class="qf-help">Not sure? Leave it at 0 and we’ll suggest a number for your guests.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="quote-form svc-block" data-reveal="right">
+        <p class="step-no">Step 4</p>
+        <h3>Pickup or delivery</h3>
+        <div class="qf-grid">
+          <div class="qs-two wide" role="radiogroup" aria-label="Pickup or delivery">
+            <label class="qs-opt"><input type="radio" name="q-fulfil" value="Delivery by us" checked><span class="qs-card"><span class="ico" data-ico="truck"></span><b>Delivery by us</b><small>We bring it to your address</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-fulfil" value="Self pickup"><span class="qs-card"><span class="ico" data-ico="bag"></span><b>Self pickup</b><small>You collect it from us</small></span></label>
+          </div>
+          <p class="qf-help wide" id="qs-fulfil-note" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="quote-form svc-block" data-reveal="up">
+        <p class="step-no">Step 5</p>
+        <h3>Spice level</h3>
         <fieldset class="spice-meter" id="spice-scale" data-level="1">
           <legend>Spice level</legend>
           <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -351,16 +366,57 @@
           </div>
           <p class="sp-read" aria-live="polite"></p>
         </fieldset>
-      </div>
+      </section>
+
+      <section class="quote-form svc-block" data-reveal="zoom">
+        <p class="step-no">Step 6</p>
+        <h3>Serving style</h3>
+        <div class="qf-grid">
+          <div class="qs-grid wide" role="radiogroup" aria-label="Serving style">
+            <label class="qs-opt"><input type="radio" name="q-style" value="Buffet" checked><span class="qs-card"><span class="ico" data-ico="buffet"></span><b>Buffet</b><small>Guests serve themselves</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-style" value="Table service"><span class="qs-card"><span class="ico" data-ico="cloche"></span><b>Table service</b><small>Served at the table</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-style" value="Banana-leaf sit-down"><span class="qs-card"><span class="ico" data-ico="leaf"></span><b>Banana-leaf sit-down</b><small>Traditional leaf meal</small></span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="quote-form svc-block" data-reveal="up">
+        <p class="step-no">Step 7</p>
+        <h3>Extras</h3>
+        <div class="qf-grid">
+          <div class="qs-grid wide">
+            <label class="qs-opt"><input type="checkbox" name="q-extra" value="Live counter"><span class="qs-card"><span class="ico" data-ico="tawa"></span><b>Live counter</b><small>Live counters and stalls</small></span></label>
+            <label class="qs-opt"><input type="checkbox" name="q-extra" value="Chafing dishes"><span class="qs-card"><span class="ico" data-ico="chafing"></span><b>Chafing dishes</b><small>Keeps food hot</small></span></label>
+            <label class="qs-opt"><input type="checkbox" name="q-extra" value="Cleanup crew"><span class="qs-card"><span class="ico" data-ico="broom"></span><b>Cleanup crew</b><small>We clear up after the event</small></span></label>
+          </div>
+          <div class="live-panel wide" id="live-panel" hidden>
+            <span class="qf-legend">Which live counters or stalls? <span class="qf-opt">choose any</span></span>
+            <div class="qs-grid" id="live-grid"></div>
+          </div>
+        </div>
+      </section>
+
     </div>
+
+    <!-- STEP 8: your menu (app.js fills #app) -->
+    <p class="step-no step-solo" data-reveal="up">Step 8</p>
     <div id="app"></div>
-        <div class="saved-meals" id="saved-meals" hidden></div>
-<div class="quote-actions">
-  <button class="outline" id="save-meal-btn" type="button">Save this meal &amp; add another</button>
-  <button class="primary" id="quote-btn" type="button">Get my quotation <span>✦</span></button>
-  <p id="quote-msg"></p>
-</div>
-<div class="quote-result" id="quote-result" hidden></div>
+
+    <section class="quote-form svc-block" data-reveal="up">
+      <div class="qf-grid">
+        <label class="wide">Special requests
+          <textarea id="q-notes" rows="3" maxlength="500" placeholder="e.g. serve sweets first, a few guests are diabetic…"></textarea>
+        </label>
+      </div>
+    </section>
+
+    <div class="saved-meals" id="saved-meals" hidden></div>
+    <div class="quote-actions">
+      <button class="outline" id="save-meal-btn" type="button">Save this meal &amp; add another</button>
+      <button class="primary" id="quote-btn" type="button">Get my quotation <span>✦</span></button>
+      <p id="quote-msg"></p>
+    </div>
+    <div class="quote-result" id="quote-result" hidden></div>
   </section>
 
   <script src="menu.js"></script>
@@ -380,6 +436,7 @@
     <script src="polish.js"></script>         <!-- NEW -->
         <script src="gallery-drag.js"></script>
     <script src="spice-scale.js"></script>
+    <script src="planner-motion.js"></script>
 </body>
 
 </html>

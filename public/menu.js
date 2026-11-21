@@ -21,6 +21,6 @@ window.MENU = [
   { category: 'Fruit Juices & Fruit Chat', items: ['Grape Juice', 'Pineapple Juice', 'Mango Juice', 'Mixed Fruit', 'Fruit Punch', 'Badam Milk', 'Milk Shake', 'Lemon Juice', 'Orange Juice', 'Apple Juice', 'Cocktail Juice', 'Watermelon Juice', 'Banana Juice', 'Sapota Juice', 'Carrot Juice', 'Rasna', 'Cool Drinks'] },
   { category: 'Hot Drinks', items: ['Tea', 'Coffee', 'Lemon Tea', 'Bournvita', 'Horlicks', 'Badam Milk', 'Milk'] },
   { category: 'Ice Creams', items: ['Vanilla', 'Strawberry', 'Butterscotch', 'Mango Ice Cream', 'Orange Ice Cream', 'Dry Fruit Ice Cream', 'Tutti Frutti'] },
-  { category: 'Special Items', items: ['Sompu','Pan', 'Sompu Mixed', 'Sweet Sompu', 'Cooling Water', 'Vadiyalu', 'Challa Mirapakayalu', 'Chat Stall', 'Fruit Stall', 'Carving', 'Veg Carving', 'Ice Carving', 'Pan Stall','Live Bobatlu Stall'] },
-     { category: 'Default Items', items: ['Curd', 'Papad', 'Ghee', 'Mineral Water', 'Green Salad', 'Plates', 'Glasses', 'Cups', 'Tissues', 'Spoons', 'Vadana Samalu'] }
+    { category: 'Special Items', items: ['Sompu', 'Pan', 'Sompu Mixed', 'Sweet Sompu' ] },
+     { category: 'Default Items', items: ['Curd', 'Papad', 'Ghee', 'Mineral Water', 'Green Salad', 'Plates', 'Glasses', 'Cups', 'Tissues', 'Spoons', 'Vadana Samalu', 'Vadiyalu', 'Challa Mirapakayalu'] }
 ];
