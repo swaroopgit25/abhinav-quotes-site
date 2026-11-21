@@ -592,3 +592,13 @@ html main:focus { outline: 0 !important; }
 
 /* gallery: touch screens swipe, so the arrow buttons are only for mouse users */
 @media (hover: none) { .gal-arrows { display: none; } }
+
+/* ===== touch screens (phones, tablets, foldables): every tap target is at least 44px ===== */
+@media (pointer: coarse) {
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
+  .cin-skip { min-height: 44px; padding-inline: 20px; }
+  .mn-chip { min-height: 44px; }
+  .tab { min-height: 44px; }
+  .back { padding: 12px 10px; margin-left: -10px; }
+   .nav nav a, .footer-links a, a[href^="tel:"], a[href^="mailto:"] { display: inline-block; padding-block: 15px; }
+}
