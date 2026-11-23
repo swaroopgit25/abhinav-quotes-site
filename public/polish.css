@@ -719,3 +719,19 @@ html main:focus { outline: 0 !important; }
 .story-name { margin: 10px 0 18px; font-family: 'Cormorant Garamond', serif; font-size: clamp(34px, 4vw, 54px);
   line-height: 1; font-weight: 600; letter-spacing: -.02em; color: var(--ink); }
 .story-copy .story-text { max-width: 52ch; margin: 0 0 16px; }
+
+/* Our Story on phones and tablets: photo on top, story below */
+@media (max-width: 900px) {
+  .story-grid { grid-template-columns: 1fr; gap: 34px; margin-top: 36px; }
+  .story-photo { max-width: 340px; margin: 0 auto; }
+  .story-photo img { aspect-ratio: 4 / 5; outline-offset: 8px; }
+  .story-badge { width: 92px; height: 92px; right: -4px; bottom: 14px; }
+  .story-badge b { font-size: 28px; }
+
+  .story-copy { align-items: stretch; text-align: left; }
+  .story-role, .story-name { text-align: center; }
+  .story-name { margin-bottom: 20px; }
+  .story-copy .story-text { max-width: none; font-size: 16px; line-height: 1.75; }
+  .story-quote { max-width: none; margin-top: 28px; }
+  .story-quote p { font-size: 24px; }
+}
