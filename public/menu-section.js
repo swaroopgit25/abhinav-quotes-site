@@ -24,7 +24,7 @@
       cats: ['Sweets', 'Hot Snacks', 'Rice', 'Biryani Rice', 'South Indian Curries',
              'North Indian Curries', 'Dal Items', ['South Indian Liquids', 'Sambar (Liquids)'], 'Default Items'],
       plan: {
-        'Sweets': '1- Sweet', 'Hot Snacks': '2- Hot', 'Rice': '1- Plain Rice', 'Biryani Rice': '1- Biryani Rice',
+        'Sweets': '1- Sweet', 'Hot Snacks':  '2- Hot Snacks', 'Rice': '1- Plain Rice', 'Biryani Rice': '1- Biryani Rice',
         'South Indian Curries': '1- South Indian Curry', 'North Indian Curries': '1- North Indian Curry',
         'Dal Items': '1- Dal', 'South Indian Liquids': '1- Liquid', 'Default Items': 'Default Items'
       }
@@ -34,7 +34,7 @@
       cats: ['Sweets', 'Hot Snacks', 'Saree Items', 'Snacks', 'Roti', 'Rice', 'Biryani Rice',
              'North Indian Curries', 'South Indian Curries', 'South Indian Fry', 'South Indian Liquids',
              'Dal Items', 'Raitas', 'Chat Items', 'Soups', 'Pickles & Chutneys', 'Podulu', 'Tiffins',
-             'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Ice Creams', 'Special Items', 'Default Items']
+             'Fruit Juices', 'Hot Drinks', 'Ice Creams', 'Special Items', 'Default Items']
     }
   };
 

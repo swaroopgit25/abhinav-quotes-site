@@ -342,5 +342,11 @@
   .mn-chip { min-height: 44px; }
   .tab { min-height: 44px; }
   .back { padding: 12px 10px; margin-left: -10px; }
-  .nav a, footer a, a[href^="tel:"], a[href^="mailto:"] { display: inline-block; padding-block: 15px; }
+  .nav nav a, footer a, a[href^="tel:"], a[href^="mailto:"] { display: inline-block; padding-block: 15px; }
+  .nav .brand { display: flex; padding-block: 0; }
 }
+
+/* quotation sent: thank-you message */
+.qr-thanks{margin-top:22px;padding:18px 20px;border:1px solid var(--gold);border-radius:var(--r-card, 20px);background:rgba(205,168,106,.08)}
+.qr-thanks h4{margin:0 0 6px;color:var(--gold);font-size:18px}
+.qr-thanks p{margin:4px 0 0;color:var(--ink);line-height:1.6}

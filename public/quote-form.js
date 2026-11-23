@@ -8,9 +8,10 @@
   // Meal -> which dish categories to show, and the time range for Event time. EDIT HERE.
   const MEALS = {
     'Welcome Drinks':    { cats: ['Fruit Juices & Fruit Chat'], from: '10:00', to: '21:00' },
-    'Breakfast': { cats: ['Sweets', 'South Indian Liquids', 'Pickles & Chutneys', 'Podulu', 'Tiffins', 'Hot Drinks', 'Default Items', 'Water Bottles'], from: '06:00', to: '11:00' },
+    'Breakfast': { cats: ['Sweets', 'South Indian Liquids', 'Pickles & Chutneys', 'Podulu', 'Tiffins', 'Hot Drinks', 'Water Bottles'], from: '06:00', to: '11:00',
+      sessions: { Morning: { from: '06:00', to: '11:00' }, Night: { from: '19:00', to: '23:00' } } },
     'Lunch':             { cats: MAIN_MEAL, from: '11:00', to: '15:00' },
-    'Snacks / High Tea': { cats: ['Sweets', 'Hot Snacks', 'Chat Items', 'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Special Items', 'Default Items', 'Water Bottles'], from: '16:00', to: '19:00' },
+    'Snacks / High Tea': { cats: ['Sweets', 'Hot Snacks', 'Chat Items', 'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Special Items', 'Water Bottles'], from: '16:00', to: '19:00' },
     'Dinner':            { cats: MAIN_MEAL, from: '19:00', to: '23:00' },
     'Saree':             { cats: ['Sweets', 'Saree Items', 'Special Items'], from: '09:00', to: '21:00' }
     
@@ -49,10 +50,15 @@
   $('q-date').value = today.toISOString().slice(0, 10);
 
   // meal changes -> event times change + only that meal's dishes are shown
+    window.mealSession = 'Morning';
+  function mealRange(name) { const m = MEALS[name]; return m.sessions ? (m.sessions[window.mealSession] || m.sessions.Morning) : m; }
+  function mealLabel(name) { return MEALS[name].sessions ? name + ' (' + window.mealSession + ')' : name; }
+  function fillTimes() { const r = mealRange($('q-meal').value); fill($('q-time'), times(r.from, r.to), 'Select time'); }
+  window.refillTimes = fillTimes;
   function onMeal() {
     const m = MEALS[$('q-meal').value];
-    fill($('q-time'), times(m.from, m.to), 'Select time');
-       window.setMealFilter(m.cats, $('q-meal').value);
+    fillTimes();
+    window.setMealFilter(m.cats, $('q-meal').value);
   }
   $('q-meal').addEventListener('change', onMeal);
   onMeal();
@@ -97,11 +103,11 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     
     };
   }
-  function dishLines(picked) {
-    const lines = [];
-    Object.keys(window.ZONE_LABELS).forEach(function (zone) {
-      const items = picked.filter(function (p) { return p.zone === zone; });
-      if (items.length) lines.push([window.ZONE_LABELS[zone], items.map(function (i) { return i.en; }).join(', ')]);
+    function dishLines(picked) {
+    const lines = [], order = [];
+    picked.forEach(function (p) { const c = p.cat || window.ZONE_LABELS[p.zone]; if (order.indexOf(c) < 0) order.push(c); });
+    order.forEach(function (c) {
+      lines.push([c, picked.filter(function (p) { return (p.cat || window.ZONE_LABELS[p.zone]) === c; }).map(function (i) { return i.en; }).join(', ')]);
     });
     return lines;
   }
@@ -110,9 +116,9 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
   const savedMeals = [];
   function currentMeal() {
     const picked = window.getPicked().slice();
-    return { meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value, picked: picked, lines: dishLines(picked) };
+      return { meal: $('q-meal').value, label: mealLabel($('q-meal').value), time: $('q-time').value, guests: $('q-guests').value, picked: picked, lines: dishLines(picked) };
   }
-  function title(m) { return m.meal + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + m.guests + ' guests' : ''); }
+   function title(m) { return (m.label || m.meal) + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + m.guests + ' guests' : ''); }
   function renderSaved() {
     const box = $('saved-meals');
     box.innerHTML = '';
@@ -146,33 +152,41 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     if (d.phone.replace(/\D/g, '').length < 10) { msg.textContent = 'Please enter a valid phone number.'; $('q-phone').focus(); return; }
     if (!meals.length) { msg.textContent = 'Please pick at least one dish from the Items panel.'; return; }
 
+        const btn = $('quote-btn');
+    btn.disabled = true;
+    msg.textContent = 'Sending your quotation…';
+
+    // the quotation goes to our server, which passes it on to the management site
     fetch('/api/quote', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(Object.assign({}, d, { meals: meals.map(function (m) {
         return { meal: m.meal, time: m.time, guests: m.guests, dishes: m.picked.map(function (p) { return { en: p.en, zone: p.zone }; }) };
       }) }))
-    }).catch(function () {});
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok) throw new Error('not saved');
+        msg.textContent = '';
+        showSent(d, meals);
+        savedMeals.length = 0; renderSaved(); window.clearPicked();
+      })
+      .catch(function () {
+        msg.textContent = 'Sorry, we could not send your quotation. Please try again, or call us on 77940 93779.';
+      })
+      .then(function () { btn.disabled = false; });
+  });
 
-    let text = 'Quotation request - Abhinav Caterers\n\nName: ' + d.name + '\nPhone: ' + d.phone
-      + (d.email ? '\nEmail: ' + d.email : '') + (d.address ? '\nAddress: ' + d.address : '')
-           + '\nEvent: ' + d.eventType + '\nDate: ' + d.date
-            + '\nSpice level: ' + d.spice + '\nService boys: ' + staffText(d.staff) + '\nPickup / delivery: ' + d.fulfil
-           + '\nServing style: ' + d.style + '\nExtras: ' + extrasText(d)
-      + (d.notes ? '\nSpecial requests: ' + d.notes : '');
-    meals.forEach(function (m) {
-      text += '\n\n' + title(m) + ':\n' + m.lines.map(function (l) { return l[0] + ': ' + l[1]; }).join('\n');
-    });
-
+  // the on-screen summary + thank-you message (no WhatsApp button)
+  function showSent(d, meals) {
     const box = $('quote-result');
     box.innerHTML = '';
     box.appendChild(el('h3', '', 'Your quotation request'));
     const grid = el('div', 'qr-grid');
-       [['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date],
+    [['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date],
       ['Spice level', d.spice], ['Service boys', staffText(d.staff)], ['Pickup / delivery', d.fulfil]].forEach(function (r) {
       const c = el('div'); c.appendChild(el('small', '', r[0])); c.appendChild(el('b', '', r[1])); grid.appendChild(c);
     });
     box.appendChild(grid);
-        box.appendChild(grid);
     if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     meals.forEach(function (m) {
       box.appendChild(el('h4', '', title(m)));
@@ -181,11 +195,12 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
         row.appendChild(el('span', '', l[1])); box.appendChild(row);
       });
     });
-    const wa = el('a', 'primary', 'Send on WhatsApp ✦');
-    wa.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text);
-    wa.target = '_blank'; wa.rel = 'noopener';
-    box.appendChild(wa);
+    const thanks = el('div', 'qr-thanks');
+    thanks.appendChild(el('h4', '', 'Your quotation has been sent ✓'));
+    thanks.appendChild(el('p', '', 'Jagadeeswari will call you for further details and any changes.'));
+    thanks.appendChild(el('p', '', 'Thank you for choosing Abhinav Caterers.'));
+    box.appendChild(thanks);
     box.hidden = false;
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
+  }
 })();

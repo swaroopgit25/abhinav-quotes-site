@@ -5,6 +5,25 @@ const picked = [];
 function keyOf(zone, en) { return zone + ':' + en; }
 function pickedIndex(key) { return picked.findIndex(function (p) { return p.key === key; }); }
 
+// ---- category names: tolerate small spelling differences between menu.js and the meal lists ----
+function normName(s) { return String(s || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
+const JUICE_NAME_IN_CONFIG = window.JUICE_CAT;   // the spelling the meal lists use
+function resolveCat(name) {
+  const n = normName(name);
+  const hit = window.MENU.find(function (c) { return normName(c.category) === n; });
+  if (hit) return hit.category;
+  if (n === normName(JUICE_NAME_IN_CONFIG) && window.JUICE_CAT !== JUICE_NAME_IN_CONFIG) return window.JUICE_CAT;   // juice category was renamed in menu.js
+  return null;
+}
+// the juice category: exact name if it exists, else any category with "juice" in its name
+(function () {
+  const exact = resolveCat(window.JUICE_CAT);
+  const loose = window.MENU.find(function (c) { return /juice/i.test(c.category); });
+  if (exact) window.JUICE_CAT = exact;
+  else if (loose) window.JUICE_CAT = loose.category;
+  else console.warn('Planner: no juice category found in menu.js (expected "' + window.JUICE_CAT + '").');
+})();
+
 const tabs = document.getElementById('items-tabs');
 const list = document.getElementById('items-list');
 
@@ -19,7 +38,7 @@ const vesselSwitch = document.getElementById('vessel-switch');
 // ---- picking dishes ----
 function isJuice(p) { return p.cat === window.JUICE_CAT; }
 function redrawDishes(newKey) {
-  if (state.drink) window.renderDrinkTray(vesselSvg, picked.filter(isJuice), newKey);   // Welcome Drinks: glasses
+    if (state.drink) { window.renderExtras(vesselSvg, [], null); window.renderDrinkTray(vesselSvg, picked.filter(isJuice), newKey); }   // Welcome Drinks: glasses
   else window.renderDishes(vesselSvg, state.vessel, picked, newKey);
 }
 
@@ -63,13 +82,14 @@ function renderPicked() {
     pickedBox.appendChild(p);
     return;
   }
-  Object.keys(window.ZONE_LABELS).forEach(function (zone) {
-    const items = picked.filter(function (p) { return p.zone === zone; });
-    if (!items.length) return;
+   const cats = [];
+  picked.forEach(function (p) { const c = p.cat || window.ZONE_LABELS[p.zone]; if (cats.indexOf(c) < 0) cats.push(c); });
+  cats.forEach(function (cat) {
+    const items = picked.filter(function (p) { return (p.cat || window.ZONE_LABELS[p.zone]) === cat; });
     const row = document.createElement('div');
     row.className = 'picked-zone';
     const label = document.createElement('b');
-    label.textContent = window.ZONE_LABELS[zone];
+        label.textContent = cat;
     row.appendChild(label);
     items.forEach(function (it) {
       const pill = document.createElement('button');
@@ -88,6 +108,7 @@ function renderPicked() {
 
 // ---- dish tabs and buttons ----
 function showGroup(group) {
+  if (!group) return;
   state.group = group;
   Array.from(tabs.children).forEach(function (b) {
     b.classList.toggle('active', b.dataset.id === group.id);
@@ -139,6 +160,18 @@ function buildTabs() {
     .filter(function (c) { return !state.allowed || state.allowed.indexOf(c) >= 0; })
     .sort(function (a, b) { return (a === 'Water Bottles') - (b === 'Water Bottles'); });   // water bottles last
   const groups = cats.map(function (c) { return { id: 'cat:' + c, label: c, zone: zoneOfCat(c), cats: [c] }; });
+  if (!groups.length) {   // nothing in menu.js matches this meal: say so instead of failing silently
+    console.warn('Planner: no menu category matches this meal. Meal wants:', state.allowed,
+      'menu.js has:', window.MENU.map(function (c) { return c.category; }));
+    list.innerHTML = '';
+    const msg = document.createElement('p');
+    msg.className = 'picked-empty';
+    msg.style.gridColumn = '1 / -1';
+    msg.textContent = 'No items found for this meal yet.';
+    list.appendChild(msg);
+    state.group = null;
+    return;
+  }
   if (groups.length > 1) groups.unshift({ id: 'all', label: 'All', zone: null, cats: cats });
   groups.forEach(function (g) {
     const b = document.createElement('button');
@@ -151,11 +184,19 @@ function buildTabs() {
 
 window.setMealFilter = function (cats, meal) {
   const mealChanged = (meal || '') !== state.meal;
+  if (cats) {   // match each name to the real category in menu.js (ignores case, spaces, "&" vs "and")
+    cats = cats.map(function (c) {
+      const real = resolveCat(c);
+      if (!real) console.warn('Planner: "' + c + '" is not a category in menu.js');
+      return real;
+    }).filter(Boolean);
+  }
   state.allowed = cats;
   state.meal = meal || '';
+    if (mealChanged) { picked.length = 0; renderPicked(); }   // a different meal starts with an empty plate
   state.drink = !!cats && cats.length === 1 && cats[0] === window.JUICE_CAT;   // Welcome Drinks
   const plates = availableVessels();
-if (mealChanged || plates.indexOf(state.vessel) < 0) state.vessel = plates[0];   // first plate of the meal (banana leaf for lunch and dinner)
+if (mealChanged || plates.indexOf(state.vessel) < 0) state.vessel = plates[0] || window.VESSELS[0];   // first plate of the meal (banana leaf for lunch and dinner)
 buildSwitch();   // glasses <-> plates for this meal
 buildTabs();   // one tab per category of this meal
   if (state.drink) redrawDishes('*'); else showVessel(state.vessel);
@@ -223,3 +264,5 @@ showVessel(window.VESSELS[0]);
 document.addEventListener('planner-open', function () {
   if (state.drink) redrawDishes('*'); else showVessel(state.vessel);
 });
+
+

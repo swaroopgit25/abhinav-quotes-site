@@ -2,7 +2,7 @@
 // "slots" say where each kind of dish will land: zone -> [centreX, centreY, radius]
 
 window.ZONE_LABELS = {
-  starter: 'Starters', sweet: 'Sweets', side: 'Sides', special: 'Special',
+  starter: 'Starters', sweet: 'Sweets', side: 'Sides', extra: 'Default items', special: 'Special',
   rice: 'Rice', curry: 'Curries', drink: 'Drinks', water: 'Water Bottles'
 };
 
@@ -393,10 +393,46 @@ function outsideHtml(list, ys, newKey, xs) {
   return html;
 }
 
+// Default items that are placed OUTSIDE the plate / leaf. EDIT THE NAMES HERE (curd, papad, ghee... stay on the leaf).
+const OUTSIDE_DEFAULT = /^(mineral water|plates?|glasses|cups?|tissues?|spoons?|vadana samalu)$/i;
+function isOutsideDefault(d) { return d.cat === 'Default Items' && OUTSIDE_DEFAULT.test(String(d.en).trim()); }
+
+// the small tray under the plate for those items
+window.renderExtras = function (svg, list, newKey) {
+  let box = document.getElementById('plate-extras');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'plate-extras'; box.className = 'plate-extras';
+    svg.insertAdjacentElement('afterend', box);
+  }
+  box.innerHTML = '';
+  box.hidden = !list.length;
+  if (!list.length) return;
+  const title = document.createElement('p');
+  title.className = 'pe-title'; title.textContent = 'Served alongside the plate';
+  box.appendChild(title);
+  const row = document.createElement('div');
+  row.className = 'pe-row';
+  list.forEach(function (d) {
+    const item = document.createElement('div');
+    item.className = 'pe-item' + (newKey === '*' || newKey === d.key ? ' new' : '');
+    item.innerHTML = '<svg viewBox="-28 -28 56 56" aria-hidden="true">' + window.foodArt(d.en, 'side', d.cat) + '</svg>';
+    const name = document.createElement('span');
+    name.textContent = d.en;
+    item.appendChild(name);
+    row.appendChild(item);
+  });
+  box.appendChild(row);
+};
+
 // picked = [{ key, en, zone, cat }]   newKey = the dish to pop in ('*' = all of them)
 window.renderDishes = function (svg, vessel, picked, newKey) {
   const old = svg.querySelector('.dishes');
   if (old) old.remove();
+    picked = picked.map(function (d) { return d.zone === 'extra' ? Object.assign({}, d, { zone: 'side' }) : d; });
+  window.renderExtras(svg, picked.filter(isOutsideDefault), newKey);   // plates, glasses... go outside
+  picked = picked.filter(function (d) { return !isOutsideDefault(d); })
+       .map(function (d) { return d.cat === 'Default Items' ? Object.assign({}, d, { zone: 'side' }) : d; });
 
   const waterL = picked.filter(function (d) { return d.zone === 'water'; });
  const cupL = vessel.outside ? picked.filter(function (d) { return (d.zone === 'sweet' && window.isCupSweet(d.en)) || d.cat === 'Ice Creams' || /^pan$/i.test(d.en); }) : [];

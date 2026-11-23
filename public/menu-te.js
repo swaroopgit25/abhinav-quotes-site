@@ -468,6 +468,7 @@ window.MENU_TE = {
   'Papad': 'పాపడ్',
   'Ghee': 'నెయ్యి',
   'Mineral Water': 'మినరల్ వాటర్',
+    'Fryms': 'ఫ్రైమ్స్',
   'Ice Creams': 'ఐస్ క్రీమ్స్',
   'Pan': 'పాన్',
   'Green Salad': 'గ్రీన్ సలాడ్',

@@ -61,7 +61,8 @@
   Array.prototype.forEach.call(meal.options, function (o) {
     var b = el('button', 'qp-meal'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.value = o.value;
     b.appendChild(el('b', '', o.text));
-    var r = range(o.value); if (r) b.appendChild(el('small', '', r));
+       var hasSessions = window.MEALS && window.MEALS[o.value] && window.MEALS[o.value].sessions;
+    var r = hasSessions ? 'Morning or night' : range(o.value); if (r) b.appendChild(el('small', '', r));
     b.addEventListener('click', function () { pickMeal(b); });
     mealGrp.appendChild(b);
   });
@@ -77,11 +78,42 @@
   }
   radios(mealGrp, pickMeal);
 
+    /* ---- Breakfast: Morning / Night tabs (shown only when Breakfast is the meal) ---- */
+  var sesBox = el('div', 'qf-pick wide'); sesBox.hidden = true;
+  var sesLeg = el('span', 'qf-legend', 'Breakfast time'); sesLeg.id = 'qp-ses-l';
+  var sesGrp = el('div', 'qp-meals'); sesGrp.setAttribute('role', 'radiogroup'); sesGrp.setAttribute('aria-labelledby', 'qp-ses-l');
+  sesBox.appendChild(sesLeg); sesBox.appendChild(sesGrp);
+  function sesRange(name) {
+    var m = window.MEALS && window.MEALS.Breakfast && window.MEALS.Breakfast.sessions;
+    if (!m || !m[name]) return '';
+    var a = m[name].from.split(':'), b = m[name].to.split(':');
+    return clock(+a[0], +a[1]) + ' to ' + clock(+b[0], +b[1]);
+  }
+  ['Morning', 'Night'].forEach(function (n) {
+    var b = el('button', 'qp-meal'); b.type = 'button'; b.setAttribute('role', 'radio'); b.dataset.value = n;
+    b.appendChild(el('b', '', n)); b.appendChild(el('small', '', sesRange(n)));
+    b.addEventListener('click', function () { pickSession(b); });
+    sesGrp.appendChild(b);
+  });
+  function pickSession(b) {
+    window.mealSession = b.dataset.value;
+    if (window.refillTimes) window.refillTimes();
+    syncSession();
+  }
+  function syncSession() {
+    var chosen = null;
+    Array.prototype.forEach.call(sesGrp.children, function (b) { if (b.dataset.value === window.mealSession) chosen = b; });
+    mark(sesGrp, chosen);
+    sesBox.hidden = meal.value !== 'Breakfast';
+  }
+  radios(sesGrp, pickSession);
+
   /* ---- put them in the form, hide the plain dropdown (kept in the page) ---- */
   grid.insertBefore(mealBox, mealLab);
+  grid.insertBefore(sesBox, mealLab);
   mealLab.classList.add('qf-synced');
   grid.classList.add('has-pickers');
-
-  meal.addEventListener('change', syncMeal);
+  meal.addEventListener('change', function () { syncMeal(); syncSession(); });
   syncMeal();
+  syncSession();
 })();

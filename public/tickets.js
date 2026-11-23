@@ -14,6 +14,32 @@
     'North Indian Curries', 'South Indian Curries', 'South Indian Fry', 'South Indian Liquids',
     'Dal Items', 'Raitas', 'Chat Items', 'Soups', 'Pickles & Chutneys', 'Podulu', 'Tiffins',
     'Fruit Juices & Fruit Chat', 'Hot Drinks', 'Ice Creams', 'Special Items', 'Default Items'];
+    /* photo for each category (files live in assets/taste/). A category with no photo simply shows no picture. */
+var PHOTOS = {
+  'Sweets': 'sweets.png',
+  'Hot Snacks': 'hot-snacks.png', 
+  'Rice': 'rice.png',
+   'Biryani Rice': 'biryani.png',
+  'South Indian Curries': 'south-curries.png', 
+  'North Indian Curries': 'north-curries.png',
+  'Dal Items': 'dal.png', 
+  'South Indian Liquids': 'sambar.png',
+   'Default Items': 'default.png',
+  'Ice Creams': 'ice-cream.png',
+   'Special Items': 'paan.png',
+    'Hot Drinks': 'hot-drinks.png',
+  'Fruit Juices': 'juices.png', 
+  'Podulu': 'podulu.png', 
+  'Pickles & Chutneys': 'pickles.png',
+   'Saree Items': 'saree-items.png',
+  'Snacks': 'snacks.png',
+  'Roti': 'roti.png',
+  'South Indian Fry': 'south-indian-fry.png',
+'Raitas': 'raitas.png',
+'Chat Items': 'chat-items.png',
+'Tiffins': 'tiffins.png',
+'Soups': 'soups.png'
+};
   var FEATURED = [], tickets = [];
   var TILTS = [-1.6, 1.2, -0.6, 1.8, -1.2, 0.5, -1.9, 1.4, -0.8];
 
@@ -65,6 +91,15 @@
       card.appendChild(el('hr', 'tk-rule'));
       card.appendChild(el('h3', 'tk-name', f.title));
       card.appendChild(el('p', 'tk-te', sampleOf(f.cat)));
+      if (PHOTOS[f.cat]) {                      // the photo sits between the dish names and the footer
+  var pic = el('img', 'tk-img');
+ pic.src = './assets/' + PHOTOS[f.cat];
+  pic.alt = '';                           // the ticket title already names it, so screen readers skip the photo
+  pic.loading = 'lazy';                   // loads only when the ticket comes near the screen
+  pic.draggable = false;                  // so dragging the rail never drags the picture
+  card.appendChild(pic);
+  li.classList.add('has-img');
+}
       var foot = el('div', 'tk-foot');
       foot.appendChild(el('span', '', n ? n + ' dishes' : ''));
       var open = el('button', 'tk-open', 'Open taste');
