@@ -112,7 +112,10 @@ html.cin-js:not(.cin-done) .cin-word .L:not(.in) { opacity: 0; transform: transl
 html.cin-js:not(.cin-subin):not(.cin-done) .cin-sub { opacity: 0; transform: translateY(18px); pointer-events: none; }
 .cin-tag { margin: 0; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: clamp(24px, 2.6vw, 42px); line-height: 1.1; color: var(--ink); text-shadow: 0 2px 18px rgba(0, 0, 0, .7); }
 .cin-tag em { color: var(--gold); font-weight: 500; }
-.cin-loc { margin: 12px 0 0; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.cin-loc { display: inline-block; margin: 16px 0 0; padding: 9px 18px; border: 1px solid rgba(205, 168, 106, .55);
+  border-radius: 999px; background: rgba(7, 20, 17, .55); font-size: 13px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink); }
+.cin-loc i { font-style: normal; color: var(--gold); margin: 0 .7em; }
 
 .cin-skip {
   display: none; position: absolute; z-index: 6; right: 5vw; top: 24px;
@@ -150,7 +153,8 @@ html.cin-snap .cin-leaf, html.cin-snap .cin-glow, html.cin-snap .cin-bang { tran
   }
       .cin-tag em { color: #e9c27c; }
   .cin-sub { flex-direction: column; align-items: center; text-align: center; gap: 16px; bottom: 4.5%; }
-  .cin-loc { margin-top: 8px; letter-spacing: .14em; font-size: 10px; }
+    .cin-loc { margin-top: 10px; padding: 8px 12px; letter-spacing: .08em; font-size: 10px; }
+  .cin-loc i { margin: 0 .45em; }
   .cin-skip { top: 16px; }
 }
 @media (max-height: 560px) and (orientation: landscape) {

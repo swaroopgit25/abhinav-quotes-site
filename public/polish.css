@@ -735,3 +735,104 @@ html main:focus { outline: 0 !important; }
   .story-quote { max-width: none; margin-top: 28px; }
   .story-quote p { font-size: 24px; }
 }
+
+/* page flow: Taste, Menus, Moments, Foundation, Contact */
+#home { display: flex; flex-direction: column; }
+#home > * { min-width: 0; }
+#home > .marquee { order: 1; }
+#signature { order: 2; }
+#menu { order: 3; }
+#gallery { order: 4; }
+#story { order: 5; }
+#contact { order: 6; }
+#about { display: none; }
+.contact-section .story-head { margin-bottom: 44px; }
+.contact-card > .ct-side { align-self: center; }
+
+/* contact details */
+.ct-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; align-content: center; }
+.ct-item { display: flex; gap: 16px; align-items: flex-start; }
+.ct-ico { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 14px;
+  border: 1px solid rgba(205, 168, 106, .45); background: rgba(205, 168, 106, .08); color: var(--gold); }
+.ct-ico svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+.ct-item small { display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: .16em; font-weight: 700; color: var(--gold); }
+.ct-item strong { display: block; color: var(--ink); font-size: 16px; font-weight: 600; line-height: 1.6; }
+.ct-item a { display: flex; align-items: center; min-height: 44px; color: var(--ink); font-size: 16px;
+  line-height: 1.5; text-decoration: none; transition: color var(--t-fast); }
+.ct-item a:hover { color: var(--gold); }
+/* follow us */
+.ct-follow { border-top: 1px solid var(--line); padding-top: 22px; }
+.ct-follow h3 { margin: 0 0 6px; font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
+.ct-follow p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.ct-social { display: flex; gap: 12px; }
+.ct-social a { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%;
+  border: 1px solid rgba(205, 168, 106, .45); color: var(--gold);
+  transition: background var(--t-fast), color var(--t-fast); }
+.ct-social a:hover { background: var(--gold); color: var(--bg); }
+.ct-social svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+
+.ct-map {
+  position: relative;
+  height: clamp(260px, 30vw, 340px);
+  margin: 0 0 28px;
+  padding: 10px;                                   /* the frame thickness */
+  border: 1px solid rgba(205, 168, 106, .45);      /* gold border, same as the icons */
+  border-radius: var(--r-card);
+  background: var(--card);
+  box-shadow: 0 0 0 6px rgba(205, 168, 106, .06), var(--shadow);  /* soft outer ring + depth */
+}
+.ct-map iframe {
+  display: block; width: 100%; height: 100%; border: 0;
+  border-radius: calc(var(--r-card) - 10px);       /* rounded inside the frame */
+  filter: invert(.9) hue-rotate(180deg) saturate(.7) brightness(.95) contrast(.9);
+}
+
+/* ---------- footer (4 columns; tokens only) ---------- */
+.site-footer { display: block; border-top: 1px solid var(--line); background: var(--bg2); padding: var(--sec-open) var(--edge) 0; }
+.ft-grid { display: grid; grid-template-columns: 1.35fr .8fr .9fr 1.2fr; gap: clamp(28px, 4vw, 64px); max-width: 1240px; margin: 0 auto; }
+.ft-col h3 { margin: 0 0 22px; padding-bottom: 12px; position: relative; font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
+.ft-col h3::after { content: ""; position: absolute; left: 0; bottom: 0; width: 28px; height: 2px; background: var(--gold); }
+.ft-logo { display: flex; align-items: center; gap: 14px; color: var(--ink); text-decoration: none; }
+.ft-logo img { width: 64px; height: 64px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(205, 168, 106, .45); }
+.ft-logo b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; line-height: 1.1; letter-spacing: -.01em; }
+.ft-logo em { display: block; margin-top: 4px; font-style: normal; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.ft-brand > p { margin: 18px 0 22px; max-width: 34ch; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.ft-social { display: flex; gap: 12px; }
+.ft-social a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--gold);
+  border: 1px solid rgba(205, 168, 106, .45); transition: background var(--t-fast), color var(--t-fast); }
+.ft-social a:hover { background: var(--gold); color: var(--bg); }
+.ft-social svg, .ft-ticks svg, .ft-reach svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ft-social svg { width: 20px; height: 20px; }
+.ft-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ft-list a { color: var(--muted); text-decoration: none; font-size: 15px; line-height: 1.6; transition: color var(--t-fast); }
+.ft-list a:hover { color: var(--gold); }
+.ft-list > li > a { display: inline-flex; align-items: center; min-height: 44px; }
+.ft-ticks li { display: flex; align-items: center; gap: 12px; min-height: 44px; color: var(--muted); font-size: 15px; }
+.ft-ticks svg { flex: none; width: 18px; height: 18px; color: var(--gold); }
+.ft-reach { gap: 10px; }
+.ft-reach li { display: flex; align-items: flex-start; gap: 14px; }
+.ft-reach svg { flex: none; width: 20px; height: 20px; margin-top: 12px; color: var(--gold); }
+.ft-reach li > span { display: grid; }
+.ft-reach li > span a { display: inline-flex; align-items: center; min-height: 44px; }
+.ft-reach a[href^="mailto:"] { overflow-wrap: anywhere; }
+.ft-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 24px;
+  max-width: 1240px; margin: clamp(32px, 5vw, 56px) auto 0; padding: 22px 0; border-top: 1px solid var(--line); }
+.ft-bottom p { margin: 0; color: var(--muted); font-size: 13px; }
+.ft-bottom .ft-tag { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: var(--gold); }
+@media (max-width: 980px) { .ft-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) {
+  .ft-grid { grid-template-columns: 1fr; gap: 36px; }
+  .ft-bottom { flex-direction: column; align-items: flex-start; }
+}
+
+.ct-map::after {
+  content: "SAHEB NAGAR . VANASTHALIPURAM . HYDERABAD";
+  position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%);
+  padding: 6px 14px; white-space: nowrap;
+  font-size: 10px; font-weight: 700; letter-spacing: .16em;
+  color: var(--gold); background: var(--bg);
+  border: 1px solid rgba(205, 168, 106, .45); border-radius: var(--r-pill);
+}
