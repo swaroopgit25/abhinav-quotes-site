@@ -45,6 +45,7 @@ function buildMime(o) {
     'From: ' + FROM_NAME + ' <' + FROM_EMAIL + '>',
     'To: ' + o.to,
     o.bcc ? 'Bcc: ' + o.bcc : null,
+    o.replyTo ? 'Reply-To: ' + o.replyTo : null,
     'Subject: ' + subjectEnc(oneLine(o.subject)),
     'MIME-Version: 1.0',
     'Content-Type: multipart/mixed; boundary="' + boundary + '"'
@@ -61,7 +62,7 @@ function buildMime(o) {
     '--' + boundary + '--';
 }
 
-function emailHtml(q, hasLogo) {
+function emailHtml(q, hasLogo, forOwner) {
   const detail = function (label, value) {
     return value ? '<tr><td style="padding:5px 14px 5px 0;color:#8a7a5a;font-size:12px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;vertical-align:top">' + esc(label) +
       '</td><td style="padding:5px 0;font-size:14px;color:#1a1a1a">' + esc(value) + '</td></tr>' : '';
@@ -84,32 +85,28 @@ function emailHtml(q, hasLogo) {
     '<td style="padding:16px 20px 16px 14px"><div style="font-family:Georgia,\'Times New Roman\',serif;font-size:24px;letter-spacing:4px;color:#e8c27a">ABHINAV CATERERS</div>' +
     '<div style="font-family:Georgia,serif;font-style:italic;font-size:12px;letter-spacing:2px;color:#e8c27a;margin-top:4px">PURE VEG &amp; OUTDOOR CATERING</div></td></tr></table>' +
     '<div style="padding:22px;border:1px solid #eadfc8;border-top:0">' +
-    '<p style="margin-top:0">Dear ' + esc(q.name) + ',</p>' +
-    '<p>Thank you for choosing Abhinav Caterers! We have received your quotation request for your <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>' +
+        (forOwner
+      ? '<p style="margin-top:0">Hello,</p>' +
+        '<p>You have received a new quotation request from <b>' + esc(q.name) + '</b> for a <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>'
+      : '<p style="margin-top:0">Dear ' + esc(q.name) + ',</p>' +
+        '<p>Thank you for choosing Abhinav Caterers! We have received your quotation request for your <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>') +
     section('CUSTOMER', detail('Customer name', q.name) + detail('Phone', q.phone) + detail('Email', q.email) + detail('Address', q.address)) +
     section('EVENT', detail('Event type', q.eventType) + detail('Event date', q.date)) +
     meals +
     section('SERVICE DETAILS', detail('Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest') + detail('Spice level', q.spice) + detail('Pickup / delivery', q.fulfil) +
       detail('Serving style', q.style) + detail('Extras', extras) + detail('Special requests', q.notes)) +
-    '<p style="margin-top:24px">Your quotation is attached as a PDF.</p>' +
-    '<p>Jagadeeswari will call you shortly to talk through the details and confirm the price.</p>' +
-    '<p style="margin-top:22px">Warm regards,<br><b>Abhinav Caterers</b><br>Pure Veg &amp; Outdoor Catering, Hyderabad<br>+91 77940 93779 · +91 93466 64914</p>' +
+       (forOwner
+      ? '<p style="margin-top:24px">The customer\'s quotation is attached as a PDF.</p>' +
+        '<p>Please call <b>' + esc(q.name) + '</b> on <a href="tel:' + esc(String(q.phone || '').replace(/[^\d+]/g, '')) + '">' + esc(q.phone) + '</a> to talk through the details and confirm the price.</p>' +
+        '<p style="margin-top:22px;color:#8a7a5a;font-size:12px">Sent automatically from the Abhinav Caterers website.</p>'
+      : '<p style="margin-top:24px">Your quotation is attached as a PDF.</p>' +
+        '<p>Jagadeeswari will call you shortly to talk through the details and confirm the price.</p>' +
+        '<p style="margin-top:22px">Warm regards,<br><b>Abhinav Caterers</b><br>Pure Veg &amp; Outdoor Catering, Hyderabad<br>+91 77940 93779 · +91 93466 64914</p>') +
     '</div></div>';
 }
-// Sends to the customer (if they gave an email) and always copies abhinavcaterers2002@gmail.com.
-async function sendQuoteEmail(q, pdfBuffer, filename) {
-  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET || !process.env.GMAIL_REFRESH_TOKEN) {
-    console.log('Email NOT sent: GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET / GMAIL_REFRESH_TOKEN missing in .env');
-    return false;
-  }
-  const customer = oneLine(q.email);
-  const to = validEmail(customer) ? customer : FROM_EMAIL;
-  const bcc = to === FROM_EMAIL ? '' : FROM_EMAIL;      // the owner gets a copy too
-  const logo = readLogo();
-  const raw = buildMime({
-    to: to, bcc: bcc, filename: filename, pdf: pdfBuffer, logo: logo, html: emailHtml(q, !!logo),
-    subject: 'Your quotation from Abhinav Caterers' + (to === FROM_EMAIL ? ' (' + oneLine(q.name) + ')' : '')
-  });
+// Sends TWO different emails: one to the owner ("you have a new quotation request") and, if the customer
+// gave an email, one to the customer ("thank you, your quotation is attached"). Both carry the PDF.
+async function postRaw(raw) {
   const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + (await accessToken()), 'Content-Type': 'application/json' },
@@ -117,7 +114,39 @@ async function sendQuoteEmail(q, pdfBuffer, filename) {
     signal: AbortSignal.timeout(30000)
   });
   if (!r.ok) throw new Error('Gmail said ' + r.status + ' ' + (await r.text()).slice(0, 300));
-  console.log('Quotation email sent to ' + to + (bcc ? ' (copy to ' + bcc + ')' : ''));
+}
+async function sendQuoteEmail(q, pdfBuffer, filename) {
+  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET || !process.env.GMAIL_REFRESH_TOKEN) {
+    console.log('Email NOT sent: GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET / GMAIL_REFRESH_TOKEN missing in .env');
+    return false;
+  }
+  const customer = oneLine(q.email), name = oneLine(q.name), logo = readLogo();
+  const customerOk = validEmail(customer) && customer.toLowerCase() !== FROM_EMAIL.toLowerCase();
+
+  // 1) the owner: replying to this email goes straight to the customer
+  await postRaw(buildMime({
+    to: FROM_EMAIL, replyTo: validEmail(customer) ? customer : '', filename: filename, pdf: pdfBuffer, logo: logo,
+    html: emailHtml(q, !!logo, true),
+    subject: 'New quotation request from ' + (name || 'a customer') + (q.eventType ? ' - ' + oneLine(q.eventType) : '')
+  }));
+  console.log('Owner email sent to ' + FROM_EMAIL);
+
+  // 2) the customer (own retries, so a failure here never sends the owner email twice)
+  if (customerOk) {
+    for (let i = 1; i <= 3; i++) {
+      try {
+        await postRaw(buildMime({
+          to: customer, filename: filename, pdf: pdfBuffer, logo: logo, html: emailHtml(q, !!logo, false),
+          subject: 'Your quotation from Abhinav Caterers'
+        }));
+        console.log('Customer email sent to ' + customer);
+        break;
+      } catch (e) {
+        console.log('Customer email attempt ' + i + ' of 3 failed:', e.message);
+        if (i < 3) await new Promise(function (ok) { setTimeout(ok, 2000 * i); });
+      }
+    }
+  }
   return true;
 }
 

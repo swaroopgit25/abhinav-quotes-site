@@ -873,8 +873,15 @@ html.cin-js:not(.cin-navin):not(.cin-done) .topbar { opacity: 0; pointer-events:
 /* the hero slides up under BOTH the strip and the nav, so it stays full-screen */
 .hero-cinema { margin-top: calc((var(--nav-h) + var(--top-h)) * -1); }
 
-@media (max-width: 900px) { .topbar .tb-mail { display: none; } }
-@media (max-width: 480px) { .topbar .tb-left { display: none; } .topbar { justify-content: center; } }
+/* tablet: everything in one smaller row. phone: phone number + email in two short rows. */
+@media (max-width: 900px) { .topbar { font-size: 12px; gap: 10px; } .tb-right { gap: 16px; } }
+@media (max-width: 700px) {
+  :root { --top-h: 64px; }
+  .topbar .tb-left { display: none; }
+  .topbar { justify-content: center; font-size: 13px; }
+  .tb-right { flex-direction: column; align-items: center; gap: 0; }
+  .topbar a { min-height: 32px; }
+}
 
 /* ---------- page background: gold lotus pattern on the green ---------- */
 body { background-color: var(--bg); background-image: var(--pattern); }
