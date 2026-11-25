@@ -52,7 +52,7 @@ function leafTears() {
 window.VESSELS = [
   {
    id: 'banana', label: 'Banana leaf', light: false, outside: true, serve: true, grid: { x: 120, y: 165, w: 430, h: 270 },
-    meals: ['Lunch', 'Dinner'],
+      meals: ['Breakfast', 'Lunch', 'Dinner'],
     slots: {
       side: [110, 250, 38], sweet: [190, 195, 42], starter: [290, 180, 44],
       curry: [400, 195, 46], special: [490, 250, 40],

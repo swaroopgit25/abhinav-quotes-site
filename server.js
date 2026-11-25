@@ -2,12 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { buildQuotePdf } = require('./quote-pdf');
+const { sendQuoteEmail } = require('./mailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 app.use(express.json({ limit: '200kb' }));
+app.use(express.urlencoded({ extended: false, limit: '200kb' }));
+app.use(express.urlencoded({ extended: false, limit: '200kb' }));
 app.use(express.static(PUBLIC_DIR));
 
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
@@ -72,6 +76,12 @@ app.post('/api/quote', async (req, res) => {
     res.json({ ok: true, saved: !!quotes });            // the customer is not kept waiting
   } catch (e) { return res.status(500).json({ ok: false }); }
 
+    // email the PDF quotation (never breaks the customer's response)
+  try {
+    const pdf = await buildQuotePdf(doc);
+    await sendQuoteEmail(doc, pdf, 'Abhinav-Caterers-Quotation.pdf');
+  } catch (e) { console.log('Quotation email failed:', e.message); }
+
   const ok = await pushToManagement(toPayload(doc));
   if (ok && quotes && doc._id) quotes.updateOne({ _id: doc._id }, { $set: { pushed: true } }).catch(function () {});
 });
@@ -93,6 +103,24 @@ app.get('/api/mgmt-check', async (req, res) => {
     else out.result = 'UNEXPECTED reply from the management site: ' + r.status;
   } catch (e) { out.result = 'PROBLEM: cannot reach the management site at that address. Is it running? (' + e.message + ')'; }
   res.json(out);
+});
+
+app.get('/api/mail-check', async (req, res) => {
+  try {
+    const pdf = await buildQuotePdf({ name: 'Test', phone: '0000000000', meals: [] });
+    await sendQuoteEmail({ name: 'Test', email: '' }, pdf, 'test.pdf');
+    res.send('OK: email sent to abhinavcaterers2002@gmail.com, check the inbox and spam');
+  } catch (e) { res.status(500).send('FAILED: ' + e.message); }
+});
+
+app.post('/api/quote-pdf', async (req, res) => {
+  try {
+    let q = {};
+    try { q = JSON.parse((req.body || {}).data || '{}'); } catch (e) {}
+    const pdf = await buildQuotePdf(q);
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="Abhinav-Caterers-Quotation.pdf"', 'Cache-Control': 'no-store' });
+    res.send(pdf);
+  } catch (e) { console.log('PDF failed:', e.message); res.status(500).send('Sorry, the PDF could not be made. Please check your email or call us on 77940 93779.'); }
 });
 
 // Send the home page explicitly, as a safety net.

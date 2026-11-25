@@ -65,7 +65,7 @@
     // marquee: repeat the text so the strip never runs empty
   var mq = document.querySelector('.marquee div');
   if (mq) {
-    var one = mq.innerHTML.trim();
+    var one = mq.innerHTML.trim().replace(/✦/g, '<i>✦</i>');   // stars get their own style
     mq.innerHTML = new Array(13).join('<span>' + one + '</span>');
   }
 })();

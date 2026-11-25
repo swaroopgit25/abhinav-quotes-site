@@ -836,3 +836,166 @@ html main:focus { outline: 0 !important; }
   color: var(--gold); background: var(--bg);
   border: 1px solid rgba(205, 168, 106, .45); border-radius: var(--r-pill);
 }
+
+/* =========================================================
+   TOP INFO STRIP + PAGE BACKGROUND
+========================================================= */
+:root {
+  --top-h: 40px;
+  --topbar-bg: #050f0c;   /* header strip + footer base: one calm, deep green */
+  --bar-bg: linear-gradient(180deg, #0a1c17 0%, var(--topbar-bg) 100%);
+  --foot-bg: radial-gradient(70% 90% at 50% 0%, rgba(205, 168, 106, .09), transparent 70%), linear-gradient(180deg, var(--bg2) 0%, var(--topbar-bg) 100%);
+  --foot-rule: linear-gradient(90deg, transparent, rgba(205, 168, 106, .6) 50%, transparent);
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23cda86a' stroke-opacity='.13'%3E%3Cg transform='translate(70 70)'%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(0)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(90)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(180)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(270)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(45) scale(.55)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(135) scale(.55)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(225) scale(.55)'/%3E%3Cpath d='M0-34C9-18 9-8 0 0C-9-8-9-18 0-34Z' transform='rotate(315) scale(.55)'/%3E%3Ccircle r='3'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23cda86a' fill-opacity='.18'%3E%3Ccircle cx='0' cy='0' r='1.6'/%3E%3Ccircle cx='140' cy='0' r='1.6'/%3E%3Ccircle cx='0' cy='140' r='1.6'/%3E%3Ccircle cx='140' cy='140' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+  --pattern-strip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='40' viewBox='0 0 48 40'%3E%3Cpath d='M24 8l8 12-8 12-8-12z' fill='none' stroke='%23cda86a' stroke-opacity='.28'/%3E%3Ccircle cx='0' cy='20' r='1.5' fill='%23cda86a' fill-opacity='.25'/%3E%3Ccircle cx='48' cy='20' r='1.5' fill='%23cda86a' fill-opacity='.25'/%3E%3C/svg%3E");
+}
+@media (max-width: 560px) { :root { --top-h: 44px; } }
+
+/* ---------- top strip ---------- */
+.topbar {
+  position: relative; z-index: 41; height: var(--top-h);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 0 var(--edge);
+  background: var(--bar-bg);
+  border-bottom: 1px solid rgba(205, 168, 106, .35);
+  color: var(--ink); font-size: 13px; letter-spacing: .02em;
+  transition: opacity .9s ease;
+}
+html.cin-js:not(.cin-navin):not(.cin-done) .topbar { opacity: 0; pointer-events: none; }  /* hidden during the intro, like the nav */
+.topbar p { margin: 0; display: flex; align-items: center; gap: 8px; }
+.tb-right { display: flex; align-items: center; gap: 28px; }
+.topbar a { display: inline-flex; align-items: center; gap: 8px; min-height: var(--top-h);
+  padding-block: 0 !important; color: var(--ink); text-decoration: none; }
+.topbar a:hover { color: var(--gold); }
+.topbar svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--gold);
+  stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* the hero slides up under BOTH the strip and the nav, so it stays full-screen */
+.hero-cinema { margin-top: calc((var(--nav-h) + var(--top-h)) * -1); }
+
+@media (max-width: 900px) { .tb-mail { display: none; } }
+@media (max-width: 480px) { .tb-left { display: none; } .topbar { justify-content: center; } }
+
+/* ---------- page background: gold lotus pattern on the green ---------- */
+body { background-color: var(--bg); background-image: var(--pattern); }
+
+/* sections that had a flat colour now let the pattern show through */
+.sig-block, .gallery-section, .contact-section, .split-section {
+  background: radial-gradient(60% 45% at 50% 0%, rgba(205, 168, 106, .07), transparent 72%);
+}
+.menu-block, .story-section, .site-footer { background: rgba(12, 29, 24, .3); }
+
+.contact-card { background: rgba(16, 37, 30, .45); }
+.mn-drop-card { background: rgba(16, 37, 30, .6); }
+
+/* ---------- footer bottom strip ---------- */
+.site-footer .ft-bottom {
+  max-width: none;
+  margin: clamp(32px, 5vw, 56px) calc(var(--edge) * -1) 0;   /* stretch edge to edge */
+  padding: 14px var(--edge);
+  min-height: 56px;
+  border-top: 1px solid rgba(205, 168, 106, .35);
+  background: var(--topbar-bg);
+}
+
+/* ---------- whole footer: calm solid green, soft gold glow, no pattern behind text ---------- */
+.site-footer {
+  position: relative;
+  border-top: 0;
+  background: var(--foot-bg);
+}
+.site-footer::before {            /* gold hairline that fades out at both ends, with a small diamond in the middle */
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--foot-rule);
+}
+.site-footer::after {
+  content: ""; position: absolute; top: -4px; left: 50%; width: 8px; height: 8px; background: var(--gold);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* =========================================================
+   SERVICES STRIP (marquee): gold, so it reads as a highlight
+========================================================= */
+.marquee {
+  padding: 20px 0;
+  color: var(--gold); font-size: 13px; font-weight: 700; letter-spacing: .2em;
+  border-block: 1px solid rgba(205, 168, 106, .4);
+  background: linear-gradient(180deg, rgba(205, 168, 106, .1), rgba(205, 168, 106, .03));
+  box-shadow: inset 0 0 40px rgba(205, 168, 106, .06);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.marquee div span i { font-style: normal; margin: 0 .35em; color: var(--cream); text-shadow: 0 0 12px rgba(205, 168, 106, .8); }
+@media (max-width: 560px) { .marquee { font-size: 12px; padding: 16px 0; } }
+
+/* =========================================================
+   [CHANGE 1] CONTACT DETAILS: nothing runs off the card on phones
+========================================================= */
+.contact-section { overflow-x: clip; }
+.contact-card > * { min-width: 0; }
+.ct-item > div { min-width: 0; flex: 1 1 auto; }
+.ct-item a, .ct-item strong { overflow-wrap: anywhere; }
+.ct-item a + a { border-top: 1px dashed var(--line); }
+
+@media (max-width: 900px) {
+  .contact-card { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .ct-list { gap: 12px; }
+  .ct-item { align-items: center; gap: 14px; padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: var(--r-card); background: rgba(7, 20, 17, .35); }
+  .ct-follow { border-top: 0; padding-top: 10px; }
+}
+@media (max-width: 560px) {
+  .contact-card { padding: 20px 14px; border-radius: 22px; }
+  .ct-item { gap: 12px; padding: 12px; }
+  .ct-ico { width: 44px; height: 44px; border-radius: 12px; }
+  .ct-item small { font-size: 10px; }
+  .ct-item a, .ct-item strong { font-size: 15px; }
+  .ct-item a[href*="@"] { font-size: 14px; }
+  .ct-follow h3 { font-size: 26px; }
+  .ct-map::after { width: max-content; max-width: calc(100% - 16px); white-space: normal; text-align: center;
+    font-size: 9px; letter-spacing: .08em; line-height: 1.4; }
+}
+
+/* =========================================================
+   [CHANGE 2] SOCIAL BUTTONS (footer + "Follow Us"): icon + name, gold pill
+========================================================= */
+.ft-social, .ct-social { display: flex; flex-wrap: wrap; gap: 10px; }
+.ft-social a, .ct-social a {
+  width: auto; height: 48px; display: inline-flex; align-items: center; gap: 10px;
+  padding: 0 18px 0 8px; border-radius: var(--r-pill);
+  border: 1px solid rgba(205, 168, 106, .45);
+  background: linear-gradient(180deg, rgba(205, 168, 106, .14), rgba(205, 168, 106, .04));
+  color: var(--ink); font-size: 14px; font-weight: 700; letter-spacing: .02em; text-decoration: none;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+}
+.ft-social a svg, .ct-social a svg {
+  flex: none; width: 32px; height: 32px; padding: 7px; border-radius: 50%;
+  background: var(--gold); color: var(--bg);
+}
+.ft-social a:hover, .ct-social a:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); transform: translateY(-2px); }
+.ft-social a:hover svg, .ct-social a:hover svg { background: var(--bg); color: var(--gold); }
+.ft-social a:focus-visible, .ct-social a:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@media (max-width: 560px) {
+  .ft-social, .ct-social { display: grid; grid-template-columns: 1fr 1fr; }
+  .ft-social a:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .ft-social a, .ct-social a { justify-content: center; padding: 0 14px 0 8px; }
+}
+
+/* PLANNER: event type tiles (same look as the meal tiles) */
+.ep-types { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.ep-type {
+  display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+  min-height: 62px; padding: 12px 14px; background: #0a1b16; border: 1px solid var(--line); border-radius: 14px;
+  transition: border-color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+}
+.ep-type b { font-size: 15px; font-weight: 600; }
+.ep-ico { flex: none; display: grid; place-items: center; color: var(--muted); transition: color var(--t-fast); }
+.ep-type:hover { border-color: rgba(205, 168, 106, .6); }
+.ep-type[aria-checked="true"] {
+  border-color: var(--gold); background: linear-gradient(135deg, rgba(205, 168, 106, .18), rgba(16, 37, 30, .8));
+}
+.ep-type[aria-checked="true"] b, .ep-type[aria-checked="true"] .ep-ico { color: var(--gold); }
+.ep-type.pop { animation: ep-pop 450ms var(--ease); }
+@keyframes ep-pop { 40% { transform: scale(.97); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .ep-type.pop { animation: none; } }
+
+

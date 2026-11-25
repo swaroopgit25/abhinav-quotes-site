@@ -350,3 +350,26 @@
 .qr-thanks{margin-top:22px;padding:18px 20px;border:1px solid var(--gold);border-radius:var(--r-card, 20px);background:rgba(205,168,106,.08)}
 .qr-thanks h4{margin:0 0 6px;color:var(--gold);font-size:18px}
 .qr-thanks p{margin:4px 0 0;color:var(--ink);line-height:1.6}
+
+
+/* =========================================================
+   [CHANGE 3] PHONE: tidy "Your menu" and the quotation summary
+========================================================= */
+@media (max-width: 700px) {
+  .picked { padding: 18px 14px; border-radius: 18px; }
+  .picked h3 { font-size: 26px; padding-right: 84px; }
+  .clear-all { top: 16px; right: 14px; min-height: 36px; padding: 8px 14px; }
+
+  .picked-zone { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 12px 0; border-top: 1px solid var(--line); }
+  .picked-zone > b { flex: 0 0 100%; min-width: 0; font-size: 12px; letter-spacing: .12em; }
+  .pill { min-height: 38px; padding: 8px 10px 8px 14px; font-size: 14px; }
+  .pill span { font-size: 18px; }
+
+  .quote-result { padding: 20px 16px; border-radius: 18px; }
+  .quote-result h3 { font-size: 26px; }
+  .quote-result > h4 { margin: 20px 0 4px; font: 600 22px 'Cormorant Garamond', Georgia, serif; color: var(--ink); }
+  .quote-result > h4 + .picked-zone { border-top-color: rgba(205, 168, 106, .45); }
+  .quote-result .picked-zone span { flex: 0 0 100%; line-height: 1.55; overflow-wrap: anywhere; }
+  .qr-grid { grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+  .qr-grid b { display: block; margin-top: 2px; overflow-wrap: anywhere; }
+}

@@ -215,3 +215,23 @@ html.cin-js:not(.cin-done) .cin-food i:not(.in) { opacity: 0; transform: transla
 .cin-food.out i { opacity: 0 !important; transform: translateY(.45em) scale(.4) !important; animation: none !important; transition: opacity .25s ease, transform .3s ease; }
 @keyframes cinBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-.07em); } }
 html.cin-snap .cin-food i { transition: none !important; }
+
+/* =========================================================
+   [CHANGE 4] HERO "Enquire Now" button: jumps straight to the contact details
+========================================================= */
+.cin-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
+.cin-contact {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 18px;
+  border-radius: 999px; border: 1px solid rgba(205, 168, 106, .55); background: rgba(7, 20, 17, .55);
+  color: var(--ink); font: 700 14px/1 'DM Sans', sans-serif; letter-spacing: .02em; text-decoration: none;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease;
+}
+.cin-contact svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; color: var(--gold); transition: color .2s ease; }
+.cin-contact:hover, .cin-contact:focus-visible { background: var(--gold); color: var(--bg); border-color: var(--gold); transform: translateY(-2px); }
+.cin-contact:hover svg, .cin-contact:focus-visible svg { color: var(--bg); }
+@media (max-width: 640px) {
+  .cin-actions { justify-content: center; gap: 10px; }
+  .cin-contact { padding: 0 14px; font-size: 13px; }
+}

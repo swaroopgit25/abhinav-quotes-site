@@ -143,7 +143,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     $('q-meal').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 
-  $('quote-btn').addEventListener('click', function () {
+   $('quote-btn').addEventListener('click', function () {
     const msg = $('quote-msg'), d = readForm();
     const meals = savedMeals.slice();
     if (window.getPicked().length) meals.push(currentMeal());   // the meal on screen counts too
@@ -152,22 +152,27 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     if (d.phone.replace(/\D/g, '').length < 10) { msg.textContent = 'Please enter a valid phone number.'; $('q-phone').focus(); return; }
     if (!meals.length) { msg.textContent = 'Please pick at least one dish from the Items panel.'; return; }
 
-        const btn = $('quote-btn');
+    const btn = $('quote-btn');
     btn.disabled = true;
     msg.textContent = 'Sending your quotation…';
 
-    // the quotation goes to our server, which passes it on to the management site
+    // what we send: the form + every meal with its dishes grouped by category (the PDF and the email use this)
+    const payload = Object.assign({}, d, { meals: meals.map(function (m) {
+      return { meal: m.meal, label: m.label, time: m.time, guests: m.guests,
+        dishes: m.picked.map(function (p) { return { en: p.en, zone: p.zone, cat: p.cat || window.ZONE_LABELS[p.zone] }; }) };
+    }) });
+
+    // the quotation goes to our server, which saves it, emails the PDF and passes it on to the management site
     fetch('/api/quote', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(Object.assign({}, d, { meals: meals.map(function (m) {
-        return { meal: m.meal, time: m.time, guests: m.guests, dishes: m.picked.map(function (p) { return { en: p.en, zone: p.zone }; }) };
-      }) }))
+      body: JSON.stringify(payload)
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (!j || !j.ok) throw new Error('not saved');
         msg.textContent = '';
         showSent(d, meals);
+        downloadPdf(payload);   // the PDF downloads by itself, the customer does not have to press anything
         savedMeals.length = 0; renderSaved(); window.clearPicked();
       })
       .catch(function () {
@@ -176,25 +181,43 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
       .then(function () { btn.disabled = false; });
   });
 
-  // the on-screen summary + thank-you message (no WhatsApp button)
-  function showSent(d, meals) {
+    // PDF download = a normal form post, so it works on desktop, Android, iPhone and iPad alike
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function downloadPdf(payload) {
+    let frame = document.getElementById('pdf-frame');
+    if (!frame) { frame = document.createElement('iframe'); frame.name = 'pdf-frame'; frame.id = 'pdf-frame'; frame.hidden = true; document.body.appendChild(frame); }
+    const f = document.createElement('form');
+    f.method = 'POST'; f.action = '/api/quote-pdf'; f.target = IS_IOS ? '_self' : 'pdf-frame'; f.hidden = true;   // iPhone/iPad only download from the page itself
+    const i = document.createElement('input'); i.type = 'hidden'; i.name = 'data'; i.value = JSON.stringify(payload);
+    f.appendChild(i); document.body.appendChild(f); f.submit();
+    setTimeout(function () { f.remove(); }, 3000);
+  }
+
+
+     function showSent(d, meals) {
     const box = $('quote-result');
     box.innerHTML = '';
     box.appendChild(el('h3', '', 'Your quotation request'));
-    const grid = el('div', 'qr-grid');
-    [['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date],
-      ['Spice level', d.spice], ['Service boys', staffText(d.staff)], ['Pickup / delivery', d.fulfil]].forEach(function (r) {
-      const c = el('div'); c.appendChild(el('small', '', r[0])); c.appendChild(el('b', '', r[1])); grid.appendChild(c);
-    });
-    box.appendChild(grid);
-    if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
-    meals.forEach(function (m) {
+    const grid = function (rows) {
+      const g = el('div', 'qr-grid');
+      rows.forEach(function (r) {
+        const c = el('div'); c.appendChild(el('small', '', r[0])); c.appendChild(el('b', '', r[1])); g.appendChild(c);
+      });
+      return g;
+    };
+    box.appendChild(grid([['Name', d.name], ['Phone', d.phone], ['Event', d.eventType], ['Date', d.date]]));
+    meals.forEach(function (m) {                               // the menu
       box.appendChild(el('h4', '', title(m)));
       m.lines.forEach(function (l) {
         const row = el('div', 'picked-zone'); row.appendChild(el('b', '', l[0]));
         row.appendChild(el('span', '', l[1])); box.appendChild(row);
       });
     });
+    const more = grid([['Service boys', staffText(d.staff)], ['Spice level', d.spice], ['Pickup / delivery', d.fulfil],
+      ['Serving style', d.style], ['Extras', extrasText(d)]]);   // after the menu
+    more.style.marginTop = '18px';
+    box.appendChild(more);
+    if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     const thanks = el('div', 'qr-thanks');
     thanks.appendChild(el('h4', '', 'Your quotation has been sent ✓'));
     thanks.appendChild(el('p', '', 'Jagadeeswari will call you for further details and any changes.'));
