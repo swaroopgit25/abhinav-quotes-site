@@ -6,9 +6,12 @@ const path = require('path');
 const FROM_EMAIL = process.env.GMAIL_USER || 'abhinavcaterers2002@gmail.com';
 const FROM_NAME = 'Abhinav Caterers';
 // small round logo shown at the top of the email (put the file in public/assets/)
-const LOGO_FILE = path.join(__dirname, 'public', 'assets', 'abhinav-logo-email.png');
-function readLogo() { try { return fs.readFileSync(LOGO_FILE); } catch (e) { console.log('Email logo missing:', LOGO_FILE); return null; } }
-
+const LOGO_FILES = [path.join(__dirname, 'public', 'assets', 'abhinav-logo-email.png'), path.join(__dirname, 'public', 'assets', 'abhinav-logo-pdf.png')];
+function readLogo() {
+  for (const f of LOGO_FILES) { try { return fs.readFileSync(f); } catch (e) {} }
+  console.log('Email logo missing (sending without it):', LOGO_FILES[0]);
+  return null;
+}
 const esc = function (s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
 };
@@ -118,4 +121,22 @@ async function sendQuoteEmail(q, pdfBuffer, filename) {
   return true;
 }
 
-module.exports = { sendQuoteEmail, validEmail, buildMime, emailHtml };
+// Explains why email is (not) working, WITHOUT sending anything. Open /api/mail-status on the live site.
+async function mailStatus() {
+  const has = { GMAIL_CLIENT_ID: !!process.env.GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET: !!process.env.GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN: !!process.env.GMAIL_REFRESH_TOKEN };
+  const out = { settingsFound: has, sendingFrom: FROM_EMAIL };
+  const missing = Object.keys(has).filter(function (k) { return !has[k]; });
+  if (missing.length) { out.result = 'PROBLEM: ' + missing.join(', ') + ' missing. Add them in the Render dashboard (Environment tab), then redeploy.'; return out; }
+  try {
+    token = { value: '', exp: 0 };
+    await accessToken();
+    out.result = 'OK: Google accepted the login, so emails can be sent.';
+  } catch (e) {
+    out.result = 'PROBLEM: ' + e.message;
+    if (/invalid_grant|expired|revoked/i.test(e.message)) out.hint = 'The Google login (refresh token) has expired or was revoked. In Google Cloud > OAuth consent screen, set the app to In production (Testing mode expires tokens after 7 days), make a NEW refresh token, and replace GMAIL_REFRESH_TOKEN in Render.';
+    else if (/invalid_client|unauthorized_client/i.test(e.message)) out.hint = 'GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET is wrong, or belongs to a different Google project than the refresh token.';
+  }
+  return out;
+}
+
+module.exports = { sendQuoteEmail, mailStatus, validEmail, buildMime, emailHtml };

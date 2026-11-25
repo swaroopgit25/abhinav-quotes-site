@@ -3,14 +3,13 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const { buildQuotePdf } = require('./quote-pdf');
-const { sendQuoteEmail } = require('./mailer');
+const { sendQuoteEmail, mailStatus } = require('./mailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 app.use(express.json({ limit: '200kb' }));
-app.use(express.urlencoded({ extended: false, limit: '200kb' }));
 app.use(express.urlencoded({ extended: false, limit: '200kb' }));
 app.use(express.static(PUBLIC_DIR));
 
@@ -65,6 +64,36 @@ function toPayload(q) {
   FIELDS.forEach(function (f) { if (q[f] !== undefined) out[f] = q[f]; });
   return out;
 }
+// Build each quotation PDF only once: the email and the download share the result (kept 2 minutes).
+const pdfCache = new Map();
+function pdfFor(q) {
+  const key = JSON.stringify(FIELDS.map(function (f) { return q[f] === undefined ? null : q[f]; }));
+  let hit = pdfCache.get(key);
+  if (!hit) {
+    hit = buildQuotePdf(q);
+    pdfCache.set(key, hit);
+    hit.catch(function () { pdfCache.delete(key); });
+    setTimeout(function () { pdfCache.delete(key); }, 120000).unref();
+  }
+  return hit;
+}
+
+// Send the quotation email, trying up to 3 times (Render can be slow to wake, Gmail can hiccup).
+async function emailWithRetry(doc) {
+  for (let i = 1; i <= 3; i++) {
+    try {
+      const pdf = await pdfFor(doc);
+      return await sendQuoteEmail(doc, pdf, 'Abhinav-Caterers-Quotation.pdf');   // false = settings missing, no point retrying
+    } catch (e) {
+      console.log('Quotation email attempt ' + i + ' of 3 failed:', e.message);
+      if (i < 3) await new Promise(function (ok) { setTimeout(ok, 3000 * i); });
+    }
+  }
+  return false;
+}
+
+// Open /api/mail-status on the live site to see why email is not arriving (sends nothing).
+app.get('/api/mail-status', async (req, res) => { res.json(await mailStatus()); });
 
 app.post('/api/quote', async (req, res) => {
   const b = req.body || {};
@@ -77,10 +106,8 @@ app.post('/api/quote', async (req, res) => {
   } catch (e) { return res.status(500).json({ ok: false }); }
 
     // email the PDF quotation (never breaks the customer's response)
-  try {
-    const pdf = await buildQuotePdf(doc);
-    await sendQuoteEmail(doc, pdf, 'Abhinav-Caterers-Quotation.pdf');
-  } catch (e) { console.log('Quotation email failed:', e.message); }
+ const emailed = await emailWithRetry(doc);
+if (quotes && doc._id) quotes.updateOne({ _id: doc._id }, { $set: { emailed: emailed } }).catch(function () {});
 
   const ok = await pushToManagement(toPayload(doc));
   if (ok && quotes && doc._id) quotes.updateOne({ _id: doc._id }, { $set: { pushed: true } }).catch(function () {});
@@ -117,7 +144,7 @@ app.post('/api/quote-pdf', async (req, res) => {
   try {
     let q = {};
     try { q = JSON.parse((req.body || {}).data || '{}'); } catch (e) {}
-    const pdf = await buildQuotePdf(q);
+    const pdf = await pdfFor(q);
     res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="Abhinav-Caterers-Quotation.pdf"', 'Cache-Control': 'no-store' });
     res.send(pdf);
   } catch (e) { console.log('PDF failed:', e.message); res.status(500).send('Sorry, the PDF could not be made. Please check your email or call us on 77940 93779.'); }
@@ -129,6 +156,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
+  buildQuotePdf({ name: 'warm-up', phone: '0', meals: [] }).catch(function () {});
   console.log('Running on http://localhost:' + PORT);
   console.log('Serving files from: ' + PUBLIC_DIR);
   console.log('index.html found: ' + fs.existsSync(path.join(PUBLIC_DIR, 'index.html')));

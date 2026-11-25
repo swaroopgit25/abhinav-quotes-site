@@ -163,6 +163,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     }) });
 
     // the quotation goes to our server, which saves it, emails the PDF and passes it on to the management site
+    if (!IS_IOS) downloadPdf(payload);   // start the PDF at once (iPhone must wait, its download replaces the page)
     fetch('/api/quote', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -172,7 +173,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
         if (!j || !j.ok) throw new Error('not saved');
         msg.textContent = '';
         showSent(d, meals);
-        downloadPdf(payload);   // the PDF downloads by itself, the customer does not have to press anything
+        if (IS_IOS) downloadPdf(payload);  // the PDF downloads by itself, the customer does not have to press anything
         savedMeals.length = 0; renderSaved(); window.clearPicked();
       })
       .catch(function () {

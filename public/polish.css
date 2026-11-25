@@ -873,8 +873,8 @@ html.cin-js:not(.cin-navin):not(.cin-done) .topbar { opacity: 0; pointer-events:
 /* the hero slides up under BOTH the strip and the nav, so it stays full-screen */
 .hero-cinema { margin-top: calc((var(--nav-h) + var(--top-h)) * -1); }
 
-@media (max-width: 900px) { .tb-mail { display: none; } }
-@media (max-width: 480px) { .tb-left { display: none; } .topbar { justify-content: center; } }
+@media (max-width: 900px) { .topbar .tb-mail { display: none; } }
+@media (max-width: 480px) { .topbar .tb-left { display: none; } .topbar { justify-content: center; } }
 
 /* ---------- page background: gold lotus pattern on the green ---------- */
 body { background-color: var(--bg); background-image: var(--pattern); }
@@ -998,4 +998,23 @@ body { background-color: var(--bg); background-image: var(--pattern); }
 @keyframes ep-pop { 40% { transform: scale(.97); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .ep-type.pop { animation: none; } }
 
+/* [FOOTER ON PHONES] shorter, tidier, two columns for the link lists */
+@media (max-width: 560px) {
+  .site-footer { padding-top: clamp(3rem, 9svh, 4.5rem); }
+  .ft-grid { grid-template-columns: 1fr 1fr; gap: 30px 20px; }
+  .ft-grid > .ft-brand, .ft-grid > .ft-col:last-child { grid-column: 1 / -1; }
+  .ft-col h3 { font-size: 24px; margin-bottom: 12px; }
+  .ft-list { gap: 0; }
+  .ft-ticks li { gap: 10px; font-size: 14px; }
+  .ft-list a { font-size: 14px; }
+  .ft-brand > p { max-width: none; }
+  .ft-reach { gap: 2px; }
+  .site-footer .ft-bottom {
+    flex-direction: column; align-items: center; text-align: center; gap: 6px;
+    padding: 18px var(--edge) calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---------- no sideways wobble on phones ---------- */
+html, body { max-width: 100%; overflow-x: clip; }
 

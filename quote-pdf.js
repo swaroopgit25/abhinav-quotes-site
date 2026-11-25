@@ -14,9 +14,14 @@ const BIZ = {
   tagline: 'Artistry on a plate, excellence at your table.',
   address: '5-1-45, Saheb Nagar, Vanasthalipuram, Hyderabad - 500070'
 };
-const LOGO = path.join(__dirname, 'public', 'assets', 'abhinav-logo.png');
-const FONT_DIR = path.join(path.dirname(require.resolve('@fontsource/cormorant-garamond/package.json')), 'files');
-const cgFont = function (weight, style) { return fs.readFileSync(path.join(FONT_DIR, 'cormorant-garamond-latin-' + weight + '-' + style + '.woff')); };
+const LOGO = path.join(__dirname, 'public', 'assets', 'abhinav-logo-pdf.png');
+const LOGO_BYTES = fs.existsSync(LOGO) ? fs.readFileSync(LOGO) : null;
+const FONT_CACHE = {};
+const cgFont = function (weight, style) {
+  const k = weight + style;
+  if (!FONT_CACHE[k]) FONT_CACHE[k] = fs.readFileSync(path.join(FONT_DIR, 'cormorant-garamond-latin-' + weight + '-' + style + '.woff'));
+  return FONT_CACHE[k];
+};
 
 const GREEN = rgb(0.067, 0.165, 0.129);
 const GOLD = rgb(0.80, 0.66, 0.42);
@@ -39,7 +44,7 @@ async function buildQuotePdf(q) {
   const cgI = await pdf.embedFont(cgFont(700, 'italic'), { subset: true });   // header: tagline
   const cgI5 = await pdf.embedFont(cgFont(600, 'italic'), { subset: true });  // header: owner + small line
   let logo = null;
-  try { logo = await pdf.embedPng(fs.readFileSync(LOGO)); } catch (e) { console.log('PDF logo missing:', LOGO); }
+ try { logo = await pdf.embedPng(LOGO_BYTES); } catch (e) { console.log('PDF logo missing:', LOGO); }
 
   // standard PDF fonts only know Western characters; drop anything else instead of crashing
   const okChars = new Set(sans.getCharacterSet());
