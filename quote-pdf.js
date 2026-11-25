@@ -16,6 +16,7 @@ const BIZ = {
 };
 const LOGO = path.join(__dirname, 'public', 'assets', 'abhinav-logo-pdf.png');
 const LOGO_BYTES = fs.existsSync(LOGO) ? fs.readFileSync(LOGO) : null;
+const FONT_DIR = path.join(path.dirname(require.resolve('@fontsource/cormorant-garamond/package.json')), 'files');
 const FONT_CACHE = {};
 const cgFont = function (weight, style) {
   const k = weight + style;

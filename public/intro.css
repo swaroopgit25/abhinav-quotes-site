@@ -4,7 +4,7 @@ html.cin-lock, html.cin-lock body { overflow: hidden; }
 
 .nav { transition: opacity .9s ease, transform .9s cubic-bezier(.2, .7, .2, 1), background .45s ease, border-color .45s ease; }
 html.cin-js:not(.cin-navin):not(.cin-done) .nav { opacity: 0; transform: translateY(-16px); pointer-events: none; }
-html.cin-atop .nav { background: linear-gradient(180deg, rgba(3, 9, 7, .72), rgba(3, 9, 7, 0)); -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: transparent; }
+html.cin-atop .nav { background: linear-gradient(180deg, rgba(3, 9, 7, .72), rgba(3, 9, 7, 0)); -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: transparent; background-clip: padding-box; }
 
 .hero-cinema {
   --nav-h: 100px;

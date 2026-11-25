@@ -895,14 +895,15 @@ body { background-color: var(--bg); background-image: var(--pattern); }
   padding: 14px var(--edge);
   min-height: 56px;
   border-top: 1px solid rgba(205, 168, 106, .35);
-  background: var(--topbar-bg);
+   background: rgba(5, 15, 12, .6);
 }
 
 /* ---------- whole footer: calm solid green, soft gold glow, no pattern behind text ---------- */
 .site-footer {
   position: relative;
   border-top: 0;
-  background: var(--foot-bg);
+    background-color: var(--topbar-bg);
+  background-image: var(--pattern), var(--pattern), var(--foot-bg);
 }
 .site-footer::before {            /* gold hairline that fades out at both ends, with a small diamond in the middle */
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--foot-rule);

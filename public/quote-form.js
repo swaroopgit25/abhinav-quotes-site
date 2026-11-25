@@ -184,8 +184,7 @@ if (IS_IOS) downloadPdf(payload);
 
     // PDF download = a normal form post, so it works on desktop, Android, iPhone and iPad alike
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  let lastPayload = null, pdfStatus = '';
-function pdfNote(text) { pdfStatus = text; const n = $('pdf-note'); if (n) n.textContent = text; }
+  let lastPayload = null;
 function downloadPdf(payload) {
   if (IS_IOS) {   // iPhone/iPad: a normal form post to the page itself
     const f = document.createElement('form');
@@ -195,18 +194,19 @@ function downloadPdf(payload) {
     setTimeout(function () { f.remove(); }, 3000);
     return;
   }
-  // Android, tablets, computers: a slow or failed PDF is shown to the customer instead of failing silently
-  pdfNote('Preparing your PDF…');
-  fetch('/api/quote-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: JSON.stringify(payload) }) })
-    .then(function (r) { if (!r.ok) throw new Error('pdf ' + r.status); return r.blob(); })
-    .then(function (blob) {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'Abhinav-Caterers-Quotation.pdf'; a.hidden = true;
-      document.body.appendChild(a); a.click();
-      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 10000);
-      pdfNote('Your PDF has been downloaded. Tap “Download PDF” to get it again.');
-    })
-    .catch(function () { pdfNote('We could not download the PDF automatically. Tap “Download PDF” to try again, or call us on 77940 93779.'); });
+    // Android, tablets, computers: the PDF downloads by itself (no message). One quiet retry if the first try fails.
+  function go(tries) {
+    fetch('/api/quote-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: JSON.stringify(payload) }) })
+      .then(function (r) { if (!r.ok) throw new Error('pdf ' + r.status); return r.blob(); })
+      .then(function (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'Abhinav-Caterers-Quotation.pdf'; a.hidden = true;
+        document.body.appendChild(a); a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 10000);
+      })
+      .catch(function () { if (tries > 0) setTimeout(function () { go(tries - 1); }, 2500); });
+  }
+  go(1);
 }
 
 
@@ -239,7 +239,7 @@ function downloadPdf(payload) {
     thanks.appendChild(el('p', '', 'Jagadeeswari will call you for further details and any changes.'));
     thanks.appendChild(el('p', '', 'Thank you for choosing Abhinav Caterers.'));
     box.appendChild(thanks);
-const note = el('p', 'qr-pdf-note', pdfStatus); note.id = 'pdf-note'; note.setAttribute('aria-live', 'polite'); box.appendChild(note);
+
 const dl = el('button', 'outline', 'Download PDF'); dl.type = 'button';
 dl.addEventListener('click', function () { if (lastPayload) downloadPdf(lastPayload); });
 box.appendChild(dl);
