@@ -140,6 +140,15 @@ app.get('/api/mail-check', async (req, res) => {
   } catch (e) { res.status(500).send('FAILED: ' + e.message); }
 });
 
+app.get('/api/pdf-test', async (req, res) => {
+  const t = Date.now();
+  try {
+    const pdf = await buildQuotePdf({ name: 'Test', phone: '0000000000', meals: [] });
+    res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'inline; filename="test.pdf"', 'X-Build-Ms': String(Date.now() - t) });
+    res.send(pdf);
+  } catch (e) { res.status(500).send('PDF FAILED: ' + e.message); }
+});
+
 app.post('/api/quote-pdf', async (req, res) => {
   try {
     let q = {};

@@ -1018,3 +1018,4 @@ body { background-color: var(--bg); background-image: var(--pattern); }
 /* ---------- no sideways wobble on phones ---------- */
 html, body { max-width: 100%; overflow-x: clip; }
 
+.qr-pdf-note { margin: 14px 0 10px; color: var(--muted); font-size: 14px; }

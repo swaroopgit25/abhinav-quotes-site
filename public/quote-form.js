@@ -172,9 +172,9 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
       .then(function (j) {
         if (!j || !j.ok) throw new Error('not saved');
         msg.textContent = '';
-        showSent(d, meals);
-        if (IS_IOS) downloadPdf(payload);  // the PDF downloads by itself, the customer does not have to press anything
-        savedMeals.length = 0; renderSaved(); window.clearPicked();
+       lastPayload = payload;
+showSent(d, meals);
+if (IS_IOS) downloadPdf(payload);
       })
       .catch(function () {
         msg.textContent = 'Sorry, we could not send your quotation. Please try again, or call us on 77940 93779.';
@@ -184,15 +184,30 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
 
     // PDF download = a normal form post, so it works on desktop, Android, iPhone and iPad alike
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  function downloadPdf(payload) {
-    let frame = document.getElementById('pdf-frame');
-    if (!frame) { frame = document.createElement('iframe'); frame.name = 'pdf-frame'; frame.id = 'pdf-frame'; frame.hidden = true; document.body.appendChild(frame); }
+  let lastPayload = null, pdfStatus = '';
+function pdfNote(text) { pdfStatus = text; const n = $('pdf-note'); if (n) n.textContent = text; }
+function downloadPdf(payload) {
+  if (IS_IOS) {   // iPhone/iPad: a normal form post to the page itself
     const f = document.createElement('form');
-    f.method = 'POST'; f.action = '/api/quote-pdf'; f.target = IS_IOS ? '_self' : 'pdf-frame'; f.hidden = true;   // iPhone/iPad only download from the page itself
+    f.method = 'POST'; f.action = '/api/quote-pdf'; f.target = '_self'; f.hidden = true;
     const i = document.createElement('input'); i.type = 'hidden'; i.name = 'data'; i.value = JSON.stringify(payload);
     f.appendChild(i); document.body.appendChild(f); f.submit();
     setTimeout(function () { f.remove(); }, 3000);
+    return;
   }
+  // Android, tablets, computers: a slow or failed PDF is shown to the customer instead of failing silently
+  pdfNote('Preparing your PDF…');
+  fetch('/api/quote-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: JSON.stringify(payload) }) })
+    .then(function (r) { if (!r.ok) throw new Error('pdf ' + r.status); return r.blob(); })
+    .then(function (blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'Abhinav-Caterers-Quotation.pdf'; a.hidden = true;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 10000);
+      pdfNote('Your PDF has been downloaded. Tap “Download PDF” to get it again.');
+    })
+    .catch(function () { pdfNote('We could not download the PDF automatically. Tap “Download PDF” to try again, or call us on 77940 93779.'); });
+}
 
 
      function showSent(d, meals) {
@@ -224,6 +239,10 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     thanks.appendChild(el('p', '', 'Jagadeeswari will call you for further details and any changes.'));
     thanks.appendChild(el('p', '', 'Thank you for choosing Abhinav Caterers.'));
     box.appendChild(thanks);
+const note = el('p', 'qr-pdf-note', pdfStatus); note.id = 'pdf-note'; note.setAttribute('aria-live', 'polite'); box.appendChild(note);
+const dl = el('button', 'outline', 'Download PDF'); dl.type = 'button';
+dl.addEventListener('click', function () { if (lastPayload) downloadPdf(lastPayload); });
+box.appendChild(dl);
     box.hidden = false;
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
