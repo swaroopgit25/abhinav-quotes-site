@@ -856,7 +856,10 @@ html main:focus { outline: 0 !important; }
   position: relative; z-index: 41; height: var(--top-h);
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 0 var(--edge);
-  background: var(--bar-bg);
+   background-color: var(--topbar-bg);
+  background-image: var(--pattern), var(--pattern), var(--bar-bg);   /* same gold lotus on green as the footer */
+  background-size: 90px 90px, 90px 90px, auto;
+  background-position: center, center, 0 0;
   border-bottom: 1px solid rgba(205, 168, 106, .35);
   color: var(--ink); font-size: 13px; letter-spacing: .02em;
   transition: opacity .9s ease;
@@ -873,16 +876,17 @@ html.cin-js:not(.cin-navin):not(.cin-done) .topbar { opacity: 0; pointer-events:
 /* the hero slides up under BOTH the strip and the nav, so it stays full-screen */
 .hero-cinema { margin-top: calc((var(--nav-h) + var(--top-h)) * -1); }
 
-/* tablet: everything in one smaller row. phone: phone number + email in two short rows. */
+/* tablet: everything in one smaller row. phone: only the phone number. */
 @media (max-width: 900px) { .topbar { font-size: 12px; gap: 10px; } .tb-right { gap: 16px; } }
 @media (max-width: 700px) {
-  :root { --top-h: 64px; }
-  .topbar .tb-left { display: none; }
+  .topbar .tb-left, .topbar .tb-mail { display: none; }
   .topbar { justify-content: center; font-size: 13px; }
-  .tb-right { flex-direction: column; align-items: center; gap: 0; }
-  .topbar a { min-height: 32px; }
 }
 
+.nav {
+  background-color: transparent;
+  background-image: var(--pattern), var(--pattern), linear-gradient(rgba(7, 20, 17, .96), rgba(7, 20, 17, .96));
+}
 /* ---------- page background: gold lotus pattern on the green ---------- */
 body { background-color: var(--bg); background-image: var(--pattern); }
 
