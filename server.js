@@ -23,8 +23,8 @@ if (process.env.MONGODB_URI) {
 }
 // ---- send each website quote to the management system ----
 // Set these two in .env (and in the Render dashboard). The key must be the same on both sites.
-const MGMT_URL = (process.env.MGMT_URL || '').replace(/\/+$/, '');   // e.g. https://abhinav-caterers.onrender.com
-const MGMT_KEY = process.env.MGMT_KEY || '';
+const MGMT_URL = (process.env.MGMT_URL || '').trim().replace(/\/+$/, '');
+const MGMT_KEY = (process.env.MGMT_KEY || '').trim();
 
 console.log('Management site: ' + (MGMT_URL || 'NOT SET') + '  |  key: ' + (MGMT_KEY ? 'set' : 'NOT SET'));
 
