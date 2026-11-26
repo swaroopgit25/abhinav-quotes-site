@@ -45,6 +45,8 @@ function redrawDishes(newKey) {
 function togglePick(dish, zone) {
   const key = keyOf(zone, dish.en);
   const i = pickedIndex(key);
+    if (i < 0 && window.beforePick && window.beforePick(dish) === false) return;   // Standard Menu: one dish per section
+  if (i >= 0 && window.beforeUnpick && window.beforeUnpick(dish) === false) return;   // Standard Menu: keep rice and curry combos valid
   if (i >= 0) picked.splice(i, 1);                       // already picked: remove it
    else picked.push({ key: key, en: dish.en, te: dish.te, zone: zone, cat: dish.cat });
 

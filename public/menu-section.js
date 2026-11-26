@@ -22,10 +22,10 @@
     standard: {
       pdf: './assets/Abhinav-Caterers-Standard-Menu.pdf',
       cats: ['Sweets', 'Hot Snacks', 'Rice', 'Biryani Rice', 'South Indian Curries',
-             'North Indian Curries', 'Dal Items', ['South Indian Liquids', 'Sambar (Liquids)'], 'Default Items'],
+                         'North Indian Curries', 'South Indian Fry', 'Dal Items', ['South Indian Liquids', 'Sambar (Liquids)'], 'Default Items'],
       plan: {
-        'Sweets': '1- Sweet', 'Hot Snacks':  '2- Hot Snacks', 'Rice': '1- Plain Rice', 'Biryani Rice': '1- Biryani Rice',
-        'South Indian Curries': '1- South Indian Curry', 'North Indian Curries': '1- North Indian Curry',
+        'Sweets': '1- Sweet', 'Hot Snacks':  '1- Hot Snacks', 'Rice': '1- Plain Rice', 'Biryani Rice': '1- Biryani Rice',
+        'South Indian Curries': '1- South Indian Curry', 'North Indian Curries': '1- North Indian Curry','South Indian Fry': '1- South Indian Fry',
         'Dal Items': '1- Dal', 'South Indian Liquids': '1- Liquid', 'Default Items': 'Default Items'
       }
     },

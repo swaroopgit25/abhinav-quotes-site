@@ -2,6 +2,7 @@
 // Normal SMTP ports are blocked on Render's free plan, so we do not use SMTP.
 // Needs these in .env (and in the Render dashboard): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN
 const fs = require('fs');
+const { priceInfo, standardText, inr, OWNER_NAME } = require('./pricing');
 const path = require('path');
 const FROM_EMAIL = process.env.GMAIL_USER || 'abhinavcaterers2002@gmail.com';
 const FROM_NAME = 'Abhinav Caterers';
@@ -79,6 +80,16 @@ function emailHtml(q, hasLogo, forOwner) {
       esc((m.label || m.meal) + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + m.guests + ' guests' : '')) + '</div>' +
       order.map(function (c) { return '<div style="font-size:13px;margin:3px 0"><b style="color:#8a6d2f">' + esc(c) + ':</b> ' + esc(groups[c].join(', ')) + '</div>'; }).join('');
   }).join('');
+
+    const price = priceInfo(q);
+  const priceRows = price.items.map(function (it) {
+    return it.kind === 'standard'
+      ? detail(it.meal + ' - Standard Menu', standardText(it))
+      : detail(it.meal + ' - All Events Menu', forOwner ? 'Price to be negotiated with the customer' : 'Price to be finalised with ' + OWNER_NAME);
+  }).join('') + (price.hasStd && price.total > 0 ? detail(price.hasAll ? 'Total (Standard Menu only)' : 'Total', inr(price.total)) : '');
+  const priceBlock = price.items.length ? section('PRICE', priceRows) : '';
+
+
   const logo = hasLogo ? '<td width="84" style="padding:16px 0 16px 20px"><img src="cid:abhinav-logo" width="64" height="64" alt="Abhinav Caterers" style="display:block;border-radius:50%;border:0"></td>' : '<td width="20"></td>';
   return '<div style="font-family:Arial,sans-serif;color:#1a1a1a;max-width:600px;margin:0 auto">' +
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0f261f;border-bottom:3px solid #cda86a"><tr>' + logo +
@@ -92,7 +103,8 @@ function emailHtml(q, hasLogo, forOwner) {
         '<p>Thank you for choosing Abhinav Caterers! We have received your quotation request for your <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>') +
     section('CUSTOMER', detail('Customer name', q.name) + detail('Phone', q.phone) + detail('Email', q.email) + detail('Address', q.address)) +
     section('EVENT', detail('Event type', q.eventType) + detail('Event date', q.date)) +
-    meals +
+        meals +
+    priceBlock +
     section('SERVICE DETAILS', detail('Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest') + detail('Spice level', q.spice) + detail('Pickup / delivery', q.fulfil) +
       detail('Serving style', q.style) + detail('Extras', extras) + detail('Special requests', q.notes)) +
        (forOwner

@@ -52,7 +52,10 @@
   // meal changes -> event times change + only that meal's dishes are shown
     window.mealSession = 'Morning';
   function mealRange(name) { const m = MEALS[name]; return m.sessions ? (m.sessions[window.mealSession] || m.sessions.Morning) : m; }
-  function mealLabel(name) { return MEALS[name].sessions ? name + ' (' + window.mealSession + ')' : name; }
+   function mealLabel(name) {
+    const base = MEALS[name].sessions ? name + ' (' + window.mealSession + ')' : name;
+    return base + (window.menuModeLabel ? window.menuModeLabel(name) : '');   // adds " - Standard Menu (Rs. 290/plate)" for lunch
+  }
   function fillTimes() { const r = mealRange($('q-meal').value); fill($('q-time'), times(r.from, r.to), 'Select time'); }
   window.refillTimes = fillTimes;
   function onMeal() {
@@ -112,11 +115,57 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     return lines;
   }
 
+    // ---- a picture of the plate (leaf + dishes) for the quotation PDF ----
+  function plateImage() {
+    return new Promise(function (resolve) {
+      try {
+        const svg = $('vessel');
+        if (!svg || !svg.firstChild) return resolve('');
+        const clone = svg.cloneNode(true);
+        const src = svg.querySelectorAll('*'), dst = clone.querySelectorAll('*');
+        const props = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'opacity', 'font-family', 'font-size',
+          'font-weight', 'text-anchor', 'paint-order', 'stroke-linejoin', 'dominant-baseline', 'display', 'visibility'];
+        const drop = [];
+        for (let i = 0; i < src.length; i++) {            // the picture is made outside the page, so copy the look of each part
+          const cs = getComputedStyle(src[i]);
+          props.forEach(function (p) { dst[i].style.setProperty(p, cs.getPropertyValue(p)); });
+          if (cs.display === 'none' || cs.visibility === 'hidden' || src[i].closest('.slots')) drop.push(dst[i]);   // empty-slot guides
+        }
+        drop.forEach(function (n) { if (n.parentNode) n.parentNode.removeChild(n); });
+        const size = 640;
+        clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        clone.setAttribute('width', size); clone.setAttribute('height', size);
+        const img = new Image();
+        const giveUp = setTimeout(function () { resolve(''); }, 5000);
+        img.onload = function () {
+          try {
+            clearTimeout(giveUp);
+            const c = document.createElement('canvas'); c.width = size; c.height = size;
+            const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, size, size);
+            const px = ctx.getImageData(0, 0, size, size).data;        // cut away the empty space around the plate
+            let x0 = size, y0 = size, x1 = -1, y1 = -1;
+            for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+              if (px[(y * size + x) * 4 + 3] > 12) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+            }
+            if (x1 < x0) return resolve('');
+            const pad = 10; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(size - 1, x1 + pad); y1 = Math.min(size - 1, y1 + pad);
+            const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+            out.getContext('2d').drawImage(c, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+            resolve(out.toDataURL('image/png'));
+          } catch (e) { resolve(''); }
+        };
+        img.onerror = function () { clearTimeout(giveUp); resolve(''); };
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(clone));
+      } catch (e) { resolve(''); }
+    });
+  }
+
     // ---- several meals in one quotation ----
   const savedMeals = [];
   function currentMeal() {
     const picked = window.getPicked().slice();
-      return { meal: $('q-meal').value, label: mealLabel($('q-meal').value), time: $('q-time').value, guests: $('q-guests').value, picked: picked, lines: dishLines(picked) };
+           return { meal: $('q-meal').value, label: mealLabel($('q-meal').value), menu: window.menuModeOf ? window.menuModeOf($('q-meal').value) : '',
+        time: $('q-time').value, guests: $('q-guests').value, picked: picked, lines: dishLines(picked) };
   }
    function title(m) { return (m.label || m.meal) + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + m.guests + ' guests' : ''); }
   function renderSaved() {
@@ -132,21 +181,25 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     });
     box.hidden = !savedMeals.length;
   }
-  $('save-meal-btn').addEventListener('click', function () {
+   $('save-meal-btn').addEventListener('click', function () {
     const msg = $('quote-msg');
     if (!window.getPicked().length) { msg.textContent = 'Pick at least one dish before saving this meal.'; return; }
     const m = currentMeal();
-    savedMeals.push(m);
-    renderSaved();
-    window.clearPicked();
-    msg.textContent = m.meal + ' saved. Now choose the next meal above and pick its dishes.';
-    $('q-meal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    plateImage().then(function (png) {            // picture first, then the dishes are cleared
+      m.plate = png;
+      savedMeals.push(m);
+      renderSaved();
+      window.clearPicked();
+      msg.textContent = m.meal + ' saved. Now choose the next meal above and pick its dishes.';
+      ($('mf') || $('q-meal')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
 
    $('quote-btn').addEventListener('click', function () {
     const msg = $('quote-msg'), d = readForm();
     const meals = savedMeals.slice();
-    if (window.getPicked().length) meals.push(currentMeal());   // the meal on screen counts too
+        const current = window.getPicked().length ? currentMeal() : null;
+    if (current) meals.push(current);   // the meal on screen counts tooif (window.getPicked().length) meals.push(currentMeal());   // the meal on screen counts too
     msg.textContent = '';
     if (!d.name) { msg.textContent = 'Please enter your name.'; $('q-name').focus(); return; }
     if (d.phone.replace(/\D/g, '').length < 10) { msg.textContent = 'Please enter a valid phone number.'; $('q-phone').focus(); return; }
@@ -156,9 +209,11 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
     btn.disabled = true;
     msg.textContent = 'Sending your quotation…';
 
+        (current ? plateImage() : Promise.resolve('')).then(function (png) {
+    if (current) current.plate = png;
     // what we send: the form + every meal with its dishes grouped by category (the PDF and the email use this)
     const payload = Object.assign({}, d, { meals: meals.map(function (m) {
-      return { meal: m.meal, label: m.label, time: m.time, guests: m.guests,
+           return { meal: m.meal, label: m.label, menu: m.menu, time: m.time, guests: m.guests, plate: m.plate || '',
         dishes: m.picked.map(function (p) { return { en: p.en, zone: p.zone, cat: p.cat || window.ZONE_LABELS[p.zone] }; }) };
     }) });
 
@@ -180,6 +235,7 @@ if (IS_IOS) downloadPdf(payload);
         msg.textContent = 'Sorry, we could not send your quotation. Please try again, or call us on 77940 93779.';
       })
       .then(function () { btn.disabled = false; });
+      }); // end of the plate picture step before the handler's final });
   });
 
     // PDF download = a normal form post, so it works on desktop, Android, iPhone and iPad alike
@@ -229,6 +285,28 @@ function downloadPdf(payload) {
         row.appendChild(el('span', '', l[1])); box.appendChild(row);
       });
     });
+
+        const priced = meals.filter(function (m) { return m.menu === 'standard' || m.menu === 'all'; });
+    if (priced.length) {
+      box.appendChild(el('h4', '', 'Price'));
+      let sum = 0, anyAll = false;
+      priced.forEach(function (m) {
+        const row = el('div', 'picked-zone'); row.appendChild(el('b', '', m.meal));
+        const g = parseInt(m.guests, 10) > 0 ? parseInt(m.guests, 10) : 0;
+        if (m.menu === 'standard') {
+          const rate = window.STANDARD_PRICE_RS || 290;
+          row.appendChild(el('span', '', g ? 'Standard Menu: Rs. ' + rate + ' x ' + g + ' guests = Rs. ' + (rate * g).toLocaleString('en-IN')
+            : 'Standard Menu: Rs. ' + rate + ' per plate'));
+          sum += rate * g;
+        } else { anyAll = true; row.appendChild(el('span', '', 'All Events Menu: price to be finalised with Mrs. Vuppala Jagadeeswari')); }
+        box.appendChild(row);
+      });
+      if (priced.some(function (m) { return m.menu === 'standard'; })) box.appendChild(el('p', 'qr-note', 'Note: the Standard Menu rate may vary in some seasons or due to inflation.'));
+      if (sum > 0) { const t = el('div', 'picked-zone'); t.appendChild(el('b', '', anyAll ? 'Total (Standard Menu only)' : 'Total'));
+        t.appendChild(el('span', '', 'Rs. ' + sum.toLocaleString('en-IN'))); box.appendChild(t); }
+    }
+
+
     const more = grid([['Service boys', staffText(d.staff)], ['Spice level', d.spice], ['Pickup / delivery', d.fulfil],
       ['Serving style', d.style], ['Extras', extrasText(d)]]);   // after the menu
     more.style.marginTop = '18px';
@@ -236,7 +314,9 @@ function downloadPdf(payload) {
     if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     const thanks = el('div', 'qr-thanks');
     thanks.appendChild(el('h4', '', 'Your quotation has been sent ✓'));
-    thanks.appendChild(el('p', '', 'Jagadeeswari will call you for further details and any changes.'));
+        thanks.appendChild(el('p', '', meals.some(function (m) { return m.menu === 'all'; })
+      ? 'Mrs. Vuppala Jagadeeswari will review your selection and call you to discuss and finalise the price.'
+      : 'Mrs. VSuppala Jagadeeswari will call you for further details and any changes.'));
     thanks.appendChild(el('p', '', 'Thank you for choosing Abhinav Caterers.'));
     box.appendChild(thanks);
 

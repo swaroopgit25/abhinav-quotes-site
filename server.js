@@ -9,8 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
-app.use(express.json({ limit: '200kb' }));
-app.use(express.urlencoded({ extended: false, limit: '200kb' }));
+app.use(express.json({ limit: '12mb' }));
+app.use(express.urlencoded({ extended: false, limit: '12mb' }));
 app.use(express.static(PUBLIC_DIR));
 
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
@@ -100,13 +100,15 @@ app.post('/api/quote', async (req, res) => {
   if (!b.name || !b.phone) return res.status(400).json({ ok: false });
   const doc = { createdAt: new Date(), pushed: false };
   FIELDS.forEach(function (f) { if (b[f] !== undefined) doc[f] = b[f]; });
+    const pdfDoc = Object.assign({}, doc);
+  if (Array.isArray(doc.meals)) doc.meals = doc.meals.map(function (m) { const c = Object.assign({}, m); delete c.plate; return c; });
   try {
     if (quotes) await quotes.insertOne(doc);            // adds doc._id
     res.json({ ok: true, saved: !!quotes });            // the customer is not kept waiting
   } catch (e) { return res.status(500).json({ ok: false }); }
 
     // email the PDF quotation (never breaks the customer's response)
- const emailed = await emailWithRetry(doc);
+ const emailed = await emailWithRetry(pdfDoc);
 if (quotes && doc._id) quotes.updateOne({ _id: doc._id }, { $set: { emailed: emailed } }).catch(function () {});
 
   const ok = await pushToManagement(toPayload(doc));

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { PDFDocument, StandardFonts, rgb, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } = require('pdf-lib');
 const fontkit = require('@pdf-lib/fontkit');
+const { priceInfo, standardText, inr, OWNER_NAME } = require('./pricing');
 
 // ---- EDIT HERE: business details printed in the header ----
 const BIZ = {
@@ -142,7 +143,7 @@ async function buildQuotePdf(q) {
   y -= 30;
 
   // ---------- helpers for sections ----------
-    function need(h) { if (y - h < 56) newPage(); }
+    function need(h) { if (y - h < 44) newPage(); }
   function section(title) {
     need(60);
     page.drawText(clean(title), { x: MX, y: y, size: 10, font: sansB, color: GOLD_DK });
@@ -159,49 +160,140 @@ async function buildQuotePdf(q) {
     y -= lines.length * 14 + 8;
   }
 
-   // ---------- customer + event ----------
-  section('CUSTOMER');
-  row('Customer name', q.name || '-');
-  row('Phone', q.phone || '-');
-  if (q.email) row('Email', q.email);
-  if (q.address) row('Address', q.address);
-  y -= 6;
+     // ---------- two-column helpers (these keep the page short and tidy) ----------
+  const COLW = (W - 2 * MX - 28) / 2;              // width of one column
+  function colH(list, w) {                         // height a list of label/value pairs will take
+    let h = 0;
+    list.forEach(function (f) { h += 12 + wrap(f[1], sans, 10.5, w).length * 13 + 8; });
+    return h;
+  }
+  function colFields(list, x, w, yy) {             // small grey label, value under it; returns the new y
+    list.forEach(function (f) {
+      page.drawText(clean(f[0]).toUpperCase(), { x: x, y: yy, size: 7.5, font: sansB, color: GREY });
+      const lines = wrap(f[1], sans, 10.5, w);
+      lines.forEach(function (l, i) { page.drawText(l, { x: x, y: yy - 12 - i * 13, size: 10.5, font: sans, color: INK }); });
+      yy -= 12 + lines.length * 13 + 8;
+    });
+    return yy;
+  }
+  function colTitle(title, x, w) {
+    page.drawText(clean(title), { x: x, y: y, size: 10, font: sansB, color: GOLD_DK });
+    page.drawLine({ start: { x: x, y: y - 6 }, end: { x: x + w, y: y - 6 }, thickness: 0.6, color: LINE });
+  }
+  function twoCols(titleL, listL, titleR, listR) {  // two titled boxes side by side (CUSTOMER | EVENT)
+    const RX = MX + COLW + 28;
+    need(30 + Math.max(colH(listL, COLW), colH(listR, COLW)));
+    colTitle(titleL, MX, COLW); colTitle(titleR, RX, COLW);
+    const eL = colFields(listL, MX, COLW, y - 22), eR = colFields(listR, RX, COLW, y - 22);
+    y = Math.min(eL, eR) - 6;
+  }
+  function grid(list) {                             // fields in pairs, two per line
+    const RX = MX + COLW + 28;
+    for (let i = 0; i < list.length; i += 2) {
+      const a = [list[i]], b = list[i + 1] ? [list[i + 1]] : [];
+      const h = Math.max(colH(a, COLW), b.length ? colH(b, COLW) : 0);
+      need(h + 4);
+      colFields(a, MX, COLW, y); if (b.length) colFields(b, RX, COLW, y);
+      y -= h;
+    }
+  }
 
-  section('EVENT');
-  row('Event type', q.eventType || '-');
-  row('Event date', q.date || '-');
+  // ---------- customer + event, side by side ----------
   const mealList = q.meals || [];
   const times = mealList.filter(function (m) { return m.time; }).map(function (m) {
     return mealList.length > 1 ? (m.label || m.meal) + ' ' + m.time : m.time;
   });
-  if (times.length) row('Event time', times.join(', '));
-  y -= 6;
+  const custList = [['Customer name', q.name || '-'], ['Phone', q.phone || '-']];
+  if (q.email) custList.push(['Email', q.email]);
+  if (q.address) custList.push(['Address', q.address]);
+  const evList = [['Event type', q.eventType || '-'], ['Event date', q.date || '-']];
+  if (times.length) evList.push(['Event time', times.join(', ')]);
+  twoCols('CUSTOMER', custList, 'EVENT', evList);
+  y -= 8;
 
-  // ---------- the menu: each meal ----------
-  mealList.forEach(function (m) {
-    const head = (m.label || m.meal || 'Meal').toUpperCase() + (m.time ? '  |  ' + m.time : '') + (m.guests ? '  |  ' + m.guests + ' guests' : '');
-    section(head);
+  // ---------- the menu: each meal = green heading bar, dishes on the left, plate picture on the right ----------
+  for (const m of mealList) {
+        const head = (m.label || m.meal || 'Meal').toUpperCase() +
+      (m.time ? '   |   ' + m.time : '') + (m.guests ? '   |   ' + m.guests + ' guests' : '');
     const order = [], groups = {};
     (m.dishes || []).forEach(function (d) {
       const c = d.cat || 'Dishes';
       if (!groups[c]) { groups[c] = []; order.push(c); }
       groups[c].push(d.en);
     });
-    order.forEach(function (c) { row(c, groups[c].join(', '), true); });
-    y -= 6;
-  });
+
+    // plate picture (if any): size it first so we know how tall this block will be
+    let pic = null, pw = 0, ph = 0, panelH = 0;
+    const PANEL_W = 205;
+    if (typeof m.plate === 'string' && m.plate.indexOf('data:image/png;base64,') === 0 && m.plate.length < 4000000) {
+      try {
+        pic = await pdf.embedPng(Buffer.from(m.plate.split(',')[1], 'base64'));
+        const k = Math.min((PANEL_W - 20) / pic.width, 190 / pic.height, 1.4);
+        pw = pic.width * k; ph = pic.height * k; panelH = ph + 20;
+      } catch (e) { pic = null; console.log('Plate picture skipped:', e.message); }
+    }
+    const LBL = 104, leftW = W - 2 * MX - (pic ? PANEL_W + 14 : 0), DW = leftW - LBL - 6;
+    const rows = order.map(function (c) { return { c: c, lines: wrap(groups[c].join(', '), sans, 10, DW) }; });
+    const leftH = rows.reduce(function (s, r) { return s + r.lines.length * 13 + 8; }, 0);
+    const bodyH = Math.max(leftH, panelH);
+
+    need(22 + 12 + bodyH + 14);                       // heading bar + dishes + picture stay together, but the block is short now
+    page.drawRectangle({ x: MX, y: y - 15, width: W - 2 * MX, height: 22, color: GREEN });
+    page.drawText(clean(head), { x: MX + 10, y: y - 8, size: 9.5, font: sansB, color: HGOLD });
+    let ry = y - 15 - 18;
+    rows.forEach(function (r) {
+      page.drawText(clean(r.c), { x: MX + 4, y: ry, size: 8.5, font: sansB, color: GOLD_DK });
+      r.lines.forEach(function (l, i) { page.drawText(l, { x: MX + 4 + LBL, y: ry - i * 13, size: 10, font: sans, color: INK }); });
+      ry -= r.lines.length * 13 + 8;
+      page.drawLine({ start: { x: MX + 4, y: ry + 9 }, end: { x: MX + leftW - 8, y: ry + 9 }, thickness: 0.4, color: LINE });
+    });
+    if (pic) {
+      const px = W - MX - PANEL_W, top = y - 15 - 8;
+      page.drawRectangle({ x: px, y: top - panelH, width: PANEL_W, height: panelH, color: GREEN, borderColor: GOLD, borderWidth: 0.8 });
+      page.drawImage(pic, { x: px + (PANEL_W - pw) / 2, y: top - panelH + 10, width: pw, height: ph });
+    }
+    y = y - 15 - 12 - bodyH - 14;
+  }
 
   // ---------- service and preferences (after the menu) ----------
   section('SERVICE DETAILS');
-  row('Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest');
-  row('Spice level', q.spice || '-');
-  row('Pickup / delivery', q.fulfil || '-');
-  row('Serving style', q.style || '-');
+  const svc = [];
+  svc.push(['Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest']);
+  svc.push(['Spice level', q.spice || '-']);
+  svc.push(['Pickup / delivery', q.fulfil || '-']);
+  svc.push(['Serving style', q.style || '-']);
   const extras = (q.extras || []).map(function (e) {
     return e === 'Live counter' && (q.live || []).length ? 'Live counter (' + q.live.join(', ') + ')' : e;
   });
-  if (extras.length) row('Extras', extras.join(', '));
-  if (q.notes) row('Special requests', q.notes);
+  if (extras.length) svc.push(['Extras', extras.join(', ')]);
+  if (q.notes) svc.push(['Special requests', q.notes]);
+  grid(svc);
+  y -= 8;
+
+    // ---------- PRICE ----------
+  const price = priceInfo(q);
+  if (price.items.length) {
+    section('PRICE');
+    price.items.forEach(function (it) {
+      if (it.kind === 'standard') row(it.meal + ' - Standard Menu', standardText(it), true);
+      else row(it.meal + ' - All Events Menu', 'Price to be finalised with ' + OWNER_NAME, true);
+    });
+
+    {                                                           // the TOTAL box
+      need(46);
+      const boxH = 30;
+      page.drawRectangle({ x: MX, y: y - boxH + 10, width: W - 2 * MX, height: boxH, color: CREAM, borderColor: GOLD, borderWidth: 0.8 });
+      const label = price.total > 0 && price.hasAll ? 'TOTAL (STANDARD MENU MEALS ONLY)' : 'TOTAL';
+      page.drawText(label, { x: MX + 12, y: y - 8, size: 10, font: sansB, color: GOLD_DK });
+      const amt = inr(price.total);
+      page.drawText(amt, { x: W - MX - 12 - sansB.widthOfTextAtSize(amt, 14), y: y - 10, size: 14, font: sansB, color: GREEN });
+      y -= boxH + 12;
+    }
+    if (price.hasStd) row('Note', 'The Standard Menu rate may vary in some seasons or due to inflation.');
+    if (price.hasAll) {
+      row('Note', 'For the All Events Menu, ' + OWNER_NAME + ' will review your selection and contact you to discuss and finalise the price.');
+    }
+  }
 
   return Buffer.from(await pdf.save());
 }

@@ -857,7 +857,7 @@ html main:focus { outline: 0 !important; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 0 var(--edge);
    background-color: var(--topbar-bg);
-  background-image: var(--pattern), var(--pattern), var(--bar-bg);   /* same gold lotus on green as the footer */
+   background-image: none; background-image: var(--pattern), var(--pattern), var(--bar-bg);   /* same gold lotus on green as the footer */
   background-size: 90px 90px, 90px 90px, auto;
   background-position: center, center, 0 0;
   border-bottom: 1px solid rgba(205, 168, 106, .35);
@@ -884,18 +884,15 @@ html.cin-js:not(.cin-navin):not(.cin-done) .topbar { opacity: 0; pointer-events:
 }
 
 .nav {
-  background-color: transparent;
-  background-image: var(--pattern), var(--pattern), linear-gradient(rgba(7, 20, 17, .96), rgba(7, 20, 17, .96));
+  background-color: rgba(7, 20, 17, .96);
+  background-image: none;
 }
 /* ---------- page background: gold lotus pattern on the green ---------- */
-body { background-color: var(--bg); background-image: var(--pattern); }
+body { background-color: var(--bg); background-image: none; }
 
 /* sections that had a flat colour now let the pattern show through */
-.sig-block, .gallery-section, .contact-section, .split-section {
-  background: radial-gradient(60% 45% at 50% 0%, rgba(205, 168, 106, .07), transparent 72%);
-}
-.menu-block, .story-section, .site-footer { background: rgba(12, 29, 24, .3); }
-
+.sig-block, .gallery-section, .contact-section, .split-section { background: none; }
+.menu-block, .story-section { background: none; }
 .contact-card { background: rgba(16, 37, 30, .45); }
 .mn-drop-card { background: rgba(16, 37, 30, .6); }
 
@@ -1031,3 +1028,59 @@ body { background-color: var(--bg); background-image: var(--pattern); }
 html, body { max-width: 100%; overflow-x: clip; }
 
 .qr-pdf-note { margin: 14px 0 10px; color: var(--muted); font-size: 14px; }
+
+/* ---------- meal first, then Standard / All Events menu ---------- */
+.mf { margin-bottom: 20px; }
+.mf .mf-grid { margin-top: 6px; }
+.mf-price { color: var(--gold) !important; font-weight: 700; font-size: 13px !important; }
+.mf-need { margin: 10px 0 0; color: var(--gold); font-size: 14px; }
+.mf-counts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
+.mf-counts-l { font-size: 13px; font-weight: 600; color: var(--gold); margin-right: 4px; }
+.mf-chip { padding: 4px 11px; border: 1px solid var(--line); border-radius: var(--r-pill); font-size: 12px; color: var(--muted); transition: color var(--t-fast), border-color var(--t-fast); }
+.mf-chip.done { border-color: var(--gold); color: var(--gold); }
+.mf-std { max-width: 1280px; margin: 18px auto 0; padding: 16px 20px; border: 1px solid var(--gold); border-radius: var(--r-card); background: rgba(16, 37, 30, .7); text-align: left; }
+.mf-std p { margin: 0 0 6px; font-size: 14px; line-height: 1.6; color: var(--ink); }
+.mf-std .mf-std-h { font: 600 26px 'Cormorant Garamond', Georgia, serif; color: var(--gold); }
+.mf-toast { position: fixed; left: 50%; bottom: 24px; z-index: 60; width: min(440px, calc(100vw - 2 * var(--edge, 20px))); transform: translateX(-50%);
+  padding: 14px 18px; border: 1px solid var(--gold); border-radius: var(--r-card); background: var(--card); box-shadow: 0 14px 40px rgba(0, 0, 0, .5);
+  color: var(--ink); font-size: 14px; line-height: 1.5; text-align: center; }
+.mf-toast.show { animation: mf-pop .45s var(--ease) both; }
+@keyframes mf-pop { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .mf-toast.show { animation: none; } }
+.mf-link { padding: 0; border: 0; background: none; color: var(--gold); font: inherit; font-size: 14px; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; min-height: 44px; }
+.mf-toast .mf-link { display: block; width: 100%; min-height: 0; margin-top: 6px; padding: 8px 0; text-align: center; }
+.mf .qf-help { margin-bottom: 16px; }
+@media (prefers-reduced-motion: reduce) { .mf-chip { transition: none; } }
+
+/* CHANGE 1: before a meal is chosen, show only Back + title + the meal card */
+#planner.await-meal > :not(.back):not(h2):not(.sub):not(#mf):not(.mf-wait) { display: none !important; }
+/* when the steps open, they drop in */
+#planner.mf-opening > :not([data-reveal]):not(.back):not(h2):not(.sub):not(#mf):not(.mf-wait) { animation: rise .7s var(--ease) both; }
+#mf { scroll-margin-top: 110px; }   /* the sticky nav must not cover the meal card */
+@media (prefers-reduced-motion: reduce) { #planner.mf-opening > * { animation: none !important; } }
+
+/* CHANGE 2: the line under Standard Menu / All Events Menu */
+.mf-line { margin: 14px 0 0; padding: 12px 16px; border-left: 2px solid var(--gold); border-radius: 0 var(--r-control) var(--r-control) 0;
+  background: rgba(16, 37, 30, .7); font-size: 14.5px; line-height: 1.6; color: var(--ink); text-align: left; }
+
+  /* CHANGE 3: the live total inside the Standard Menu note */
+.mf-total { font-weight: 600; color: var(--gold) !important; }
+.mf-rate-note { margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--gold); border-radius: var(--r-control); background: rgba(205, 168, 106, .08); color: var(--gold); }
+.mf-rate-note p { margin: 0; font-size: 14px; line-height: 1.5; font-weight: 600; }
+.mf-rate-note .te { margin-top: 3px; font-family: 'Noto Sans Telugu', 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; }
+
+/* CHANGE 5: planner background = gold light from the top + lotus pattern + soft green fade */
+.planner {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(70% 38% at 50% 0%, rgba(205, 168, 106, .13), transparent 72%),
+    var(--pattern),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+  background-position: center top, center top, center;
+}
+
+/* the medallion + hint under the meal card */
+.mf-wait { display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 0 auto; color: var(--gold); }
+.mf-wait::before { content: ""; width: 1px; height: clamp(28px, 6vh, 56px); background: linear-gradient(transparent, var(--gold)); opacity: .5; }
+.mf-wait svg { box-sizing: content-box; padding: 16px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
+.mf-wait p { margin: 0; font-size: 15px; color: var(--muted); }
