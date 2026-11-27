@@ -107,6 +107,7 @@ var PRICE_NOTE_TE = 'గమనిక: సీజన్‌ను బట్టి �
   sec.appendChild(el('p', 'step-no', 'Start here'));
   var h = el('h3', '', 'What meal is it for?'); h.id = 'mf-h'; sec.appendChild(h);
   sec.appendChild(el('p', 'qf-help', 'Choose the meal first. We then show the dishes that suit it.'));
+    sec.appendChild(el('p', 'qf-help mf-multi', 'Having more than one meal in a day? Choose the first meal now and pick its dishes. Then press \u201CSave this meal & add another\u201D at the bottom, and add your next meal.'));
   var grid = el('div', 'qf-grid mf-grid'); sec.appendChild(grid);
   grid.appendChild(mealLeg.parentNode);                        // the meal tiles move here (they keep working)
   if (sesLeg) grid.appendChild(sesLeg.parentNode);             // Breakfast: morning / night

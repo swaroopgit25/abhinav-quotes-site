@@ -3,6 +3,25 @@
 // Needs these in .env (and in the Render dashboard): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN
 const fs = require('fs');
 const { priceInfo, standardText, inr, OWNER_NAME } = require('./pricing');
+const { loadI18n } = require('./i18n-server');
+
+// The customer's email follows the language they chose on the website (en / te / hi). The owner's email stays English.
+const EMAIL_TXT = {
+  en: { subject: 'Your quotation from Abhinav Caterers', dear: function (n) { return 'Dear ' + n + ','; },
+    thanks: function (ev, dt) { return 'Thank you for choosing Abhinav Caterers! We have received your quotation request for your <b>' + ev + '</b>' + (dt ? ' on <b>' + dt + '</b>' : '') + '.'; },
+    attached: 'Your quotation is attached as a PDF.', call: 'Jagadeeswari will call you shortly to talk through the details and confirm the price.', regards: 'Warm regards,' },
+  te: { subject: 'అభినవ్ క్యాటరర్స్ నుండి మీ కొటేషన్', dear: function (n) { return 'ప్రియమైన ' + n + ' గారూ,'; },
+    thanks: function (ev, dt) { return 'అభినవ్ క్యాటరర్స్‌ను ఎంచుకున్నందుకు ధన్యవాదాలు! మీ <b>' + ev + '</b>' + (dt ? ' (<b>' + dt + '</b>)' : '') + ' కోసం మీ కొటేషన్ అభ్యర్థనను స్వీకరించాము.'; },
+    attached: 'మీ కొటేషన్ PDF గా జతచేయబడింది.', call: 'వివరాలు మాట్లాడి ధరను నిర్ధారించడానికి జగదీశ్వరి గారు త్వరలో మీకు కాల్ చేస్తారు.', regards: 'శుభాకాంక్షలతో,' },
+  hi: { subject: 'अभिनव कैटरर्स की ओर से आपका कोटेशन', dear: function (n) { return 'प्रिय ' + n + ','; },
+    thanks: function (ev, dt) { return 'अभिनव कैटरर्स को चुनने के लिए धन्यवाद! हमें आपके <b>' + ev + '</b>' + (dt ? ' (<b>' + dt + '</b>)' : '') + ' के लिए आपका कोटेशन अनुरोध मिल गया है।'; },
+    attached: 'आपका कोटेशन PDF के रूप में संलग्न है।', call: 'जगदीश्वरी जी विवरण पर बात करने और कीमत पक्की करने के लिए जल्द ही आपको कॉल करेंगी।', regards: 'सादर,' }
+};
+const RAW_LABELS = ['Customer name', 'Phone', 'Email', 'Address', 'Special requests', 'Event date'];   // what the customer typed is never translated
+const htmlToText = function (h) {
+  return h.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|tr|p|table|h\d)>/gi, '\n').replace(/<\/td>/gi, ' ').replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+};
 const path = require('path');
 const FROM_EMAIL = process.env.GMAIL_USER || 'abhinavcaterers2002@gmail.com';
 const FROM_NAME = 'Abhinav Caterers';
@@ -52,7 +71,11 @@ function buildMime(o) {
     'Content-Type: multipart/mixed; boundary="' + boundary + '"'
   ].filter(Boolean).join('\r\n');
   // the page + the logo picture inside it (cid:abhinav-logo), then the PDF as an attachment
-  const page = '--' + rel + '\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n' + wrap76(b64(o.html)) + '\r\n' +
+  const alt = boundary + '_alt';
+  const page = '--' + rel + '\r\nContent-Type: multipart/alternative; boundary="' + alt + '"\r\n\r\n' +
+    '--' + alt + '\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n' + wrap76(b64(htmlToText(o.html))) + '\r\n' +
+    '--' + alt + '\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n' + wrap76(b64(o.html)) + '\r\n' +
+    '--' + alt + '--\r\n' +
     (o.logo ? '--' + rel + '\r\nContent-Type: image/png; name="logo.png"\r\nContent-Transfer-Encoding: base64\r\nContent-ID: <abhinav-logo>\r\n' +
       'Content-Disposition: inline; filename="logo.png"\r\n\r\n' + wrap76(b64(o.logo)) + '\r\n' : '') +
     '--' + rel + '--';
@@ -64,21 +87,23 @@ function buildMime(o) {
 }
 
 function emailHtml(q, hasLogo, forOwner) {
+  const L = !forOwner && ['te', 'hi'].indexOf(q.lang) >= 0 ? q.lang : 'en', X = EMAIL_TXT[L];
+  const T = function (t) { return L === 'en' ? t : loadI18n().tr(t, L); };
   const detail = function (label, value) {
-    return value ? '<tr><td style="padding:5px 14px 5px 0;color:#8a7a5a;font-size:12px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;vertical-align:top">' + esc(label) +
-      '</td><td style="padding:5px 0;font-size:14px;color:#1a1a1a">' + esc(value) + '</td></tr>' : '';
+    return value ? '<tr><td style="padding:5px 14px 5px 0;color:#8a7a5a;font-size:12px;letter-spacing:' + (L === 'en' ? '1px' : '0') + ';' + (L === 'en' ? 'text-transform:uppercase;' : '') + 'white-space:nowrap;vertical-align:top">' + esc(T(label)) +
+      '</td><td style="padding:5px 0;font-size:14px;color:#1a1a1a">' + esc(RAW_LABELS.indexOf(label) >= 0 ? value : T(value)) + '</td></tr>' : '';
   };
   const section = function (title, rows) {
-    return '<div style="margin:22px 0 4px;font-size:12px;font-weight:bold;letter-spacing:1.5px;color:#8a6d2f;border-bottom:1px solid #eadfc8;padding-bottom:4px">' + esc(title) + '</div>' +
+    return '<div style="margin:22px 0 4px;font-size:12px;font-weight:bold;letter-spacing:1.5px;color:#8a6d2f;border-bottom:1px solid #eadfc8;padding-bottom:4px">' + esc(T(title)) + '</div>' +
       '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 0">' + rows + '</table>';
   };
   const extras = (q.extras || []).map(function (e) { return e === 'Live counter' && (q.live || []).length ? 'Live counter (' + q.live.join(', ') + ')' : e; }).join(', ');
   const meals = (q.meals || []).map(function (m) {
     const groups = {}, order = [];
-    (m.dishes || []).forEach(function (d) { const c = d.cat || 'Dishes'; if (!groups[c]) { groups[c] = []; order.push(c); } groups[c].push(d.en); });
+    (m.dishes || []).forEach(function (d) { const c = d.cat || 'Dishes'; if (!groups[c]) { groups[c] = []; order.push(c); } groups[c].push(T(d.en)); });
     return '<div style="margin:22px 0 4px;font-weight:bold;color:#112a21;border-bottom:1px solid #eadfc8;padding-bottom:4px">' +
-      esc((m.label || m.meal) + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + m.guests + ' guests' : '')) + '</div>' +
-      order.map(function (c) { return '<div style="font-size:13px;margin:3px 0"><b style="color:#8a6d2f">' + esc(c) + ':</b> ' + esc(groups[c].join(', ')) + '</div>'; }).join('');
+      esc(T((m.label || m.meal)) + (m.time ? ' · ' + m.time : '') + (m.guests ? ' · ' + T(m.guests + ' guests') : '')) + '</div>' +
+      order.map(function (c) { return '<div style="font-size:13px;margin:3px 0"><b style="color:#8a6d2f">' + esc(T(c)) + ':</b> ' + esc(groups[c].join(', ')) + '</div>'; }).join('');
   }).join('');
 
     const price = priceInfo(q);
@@ -99,8 +124,8 @@ function emailHtml(q, hasLogo, forOwner) {
         (forOwner
       ? '<p style="margin-top:0">Hello,</p>' +
         '<p>You have received a new quotation request from <b>' + esc(q.name) + '</b> for a <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>'
-      : '<p style="margin-top:0">Dear ' + esc(q.name) + ',</p>' +
-        '<p>Thank you for choosing Abhinav Caterers! We have received your quotation request for your <b>' + esc(q.eventType || 'event') + '</b>' + (q.date ? ' on <b>' + esc(q.date) + '</b>' : '') + '.</p>') +
+      : '<p style="margin-top:0">' + X.dear(esc(q.name)) + '</p>' +
+        '<p>' + X.thanks(esc(T(q.eventType || 'event')), esc(q.date || '')) + '</p>') +
     section('CUSTOMER', detail('Customer name', q.name) + detail('Phone', q.phone) + detail('Email', q.email) + detail('Address', q.address)) +
     section('EVENT', detail('Event type', q.eventType) + detail('Event date', q.date)) +
         meals +
@@ -111,9 +136,9 @@ function emailHtml(q, hasLogo, forOwner) {
       ? '<p style="margin-top:24px">The customer\'s quotation is attached as a PDF.</p>' +
         '<p>Please call <b>' + esc(q.name) + '</b> on <a href="tel:' + esc(String(q.phone || '').replace(/[^\d+]/g, '')) + '">' + esc(q.phone) + '</a> to talk through the details and confirm the price.</p>' +
         '<p style="margin-top:22px;color:#8a7a5a;font-size:12px">Sent automatically from the Abhinav Caterers website.</p>'
-      : '<p style="margin-top:24px">Your quotation is attached as a PDF.</p>' +
-        '<p>Jagadeeswari will call you shortly to talk through the details and confirm the price.</p>' +
-        '<p style="margin-top:22px">Warm regards,<br><b>Abhinav Caterers</b><br>Pure Veg &amp; Outdoor Catering, Hyderabad<br>+91 77940 93779 · +91 93466 64914</p>') +
+      : '<p style="margin-top:24px">' + X.attached + '</p>' +
+        '<p>' + X.call + '</p>' +
+        '<p style="margin-top:22px">' + X.regards + '<br><b>Abhinav Caterers</b><br>Pure Veg &amp; Outdoor Catering, Hyderabad<br>+91 77940 93779 · +91 93466 64914</p>') +
     '</div></div>';
 }
 // Sends TWO different emails: one to the owner ("you have a new quotation request") and, if the customer
@@ -149,7 +174,7 @@ async function sendQuoteEmail(q, pdfBuffer, filename) {
       try {
         await postRaw(buildMime({
           to: customer, filename: filename, pdf: pdfBuffer, logo: logo, html: emailHtml(q, !!logo, false),
-          subject: 'Your quotation from Abhinav Caterers'
+          subject: EMAIL_TXT[['te', 'hi'].indexOf(q.lang) >= 0 ? q.lang : 'en'].subject
         }));
         console.log('Customer email sent to ' + customer);
         break;

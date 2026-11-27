@@ -180,11 +180,11 @@
       </section>
 
             <section id="signature" class="section sig-block" aria-labelledby="sig-h">
-        <div class="section-label">03 / A TASTE OF THE MENU</div>
+        <div class="section-label">01 / A TASTE OF THE MENU</div>
         <div class="section-head">
                     <h2 id="sig-h">Pull a <em>taste.</em></h2>
           
-          <p>Swipe or drag the rail. Each taste opens it's category in the full menu.</p>
+          <p>Swipe or drag the rail. Each taste opens its category in the full menu.</p>
         </div>
         <div class="tk-modes" id="tk-modes" role="radiogroup" aria-label="Choose a menu">
   <button type="button" role="radio" aria-checked="true" data-mode="standard" tabindex="0">Standard Menu</button>
@@ -203,7 +203,7 @@
       </section>
 
             <section id="menu" class="section menu-block">
-        <div class="section-label">04 / OUR MENUS</div>
+        <div class="section-label">02 / OUR MENUS</div>
         <div class="section-head">
           <h2>Every dish, <em>made with care.</em></h2>
           <p>Pick a menu, browse by category or search for a dish. Telugu names included.</p>
@@ -219,7 +219,7 @@
         </div>
 
         <div class="mn-tools">
-          <input id="mn-search" type="search" placeholder="Search a dish…" aria-label="Search a dish" autocomplete="off">
+          <input id="mn-search" type="search" placeholder="Search a dish…" aria-label="Search a dish" autocomplete="on">
           <a id="mn-pdf" class="outline" href="./assets/Abhinav-Caterers-Standard-Menu.pdf" download>Download PDF ↓</a>
         </div>
 
@@ -246,7 +246,7 @@
 
                               <section id="story" class="section story-section" aria-labelledby="story-h">
         <header class="story-head">
-          <div class="section-label story-pill">04 / OUR FOUNDATION</div>
+          <div class="section-label story-pill">03 / OUR FOUNDATION</div>
           <h2 id="story-h">Heritage <em>&amp; Values</em></h2>
           <div class="story-orn" aria-hidden="true">
             <i></i>
@@ -286,7 +286,7 @@
 
       <section id="contact" class="section contact-section">
         <header class="story-head">
-          <div class="section-label story-pill">05 / CONTACT</div>
+          <div class="section-label story-pill">04 / CONTACT</div>
           <h2>Planning an event? <em>Let’s talk.</em></h2>
           <div class="story-orn" aria-hidden="true">
             <i></i>
@@ -448,15 +448,15 @@
       <p class="step-no">Step 1</p>
       <h3>Event details</h3>
       <div class="qf-grid">
-        <label>Customer name<input id="q-name" type="text"></label>
-        <label>Phone<input id="q-phone" type="tel" inputmode="tel"></label>
-        <label>Customer email<input id="q-email" type="email"></label>
-        <label class="wide">Address<textarea id="q-address" rows="2"></textarea></label>
+        <label>Customer name<input id="q-name" type="text" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="e.g. Ajay Kumar"></label>
+        <label>Phone<input id="q-phone" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="next" placeholder="e.g. 63029 63570"></label>
+        <label>Customer email<input id="q-email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" enterkeyhint="next" placeholder="e.g. name@example.com"></label>
+        <label class="wide">Address<textarea id="q-address" autocomplete="street-address" rows="2" placeholder="e.g. Plot 12, Road No. 3, Saheb Nagar, Hyderabad - 500070"></textarea></label>
         <label>Event type<select id="q-type"></select></label>
         <label>Event date<input id="q-date" type="date"></label>
         <label>Meal<select id="q-meal"></select></label>
         <label>Event time<select id="q-time"></select></label>
-        <label>Number of guests<input id="q-guests" type="number" min="1" inputmode="numeric" placeholder="e.g. 150"></label>
+        <label>Number of guests<input id="q-guests" type="number" min="1" inputmode="numeric" enterkeyhint="done" placeholder="e.g. 150"></label>
       </div>
     </form>
 
@@ -494,6 +494,7 @@
             </div>
             <div class="crew" id="crew" aria-hidden="true"></div>
             <p class="qf-help">Not sure? Leave it at 0 and we’ll suggest a number for your guests.</p>
+            <p class="qf-help qf-note"><strong>Note:</strong> Service boys are charged extra. The amount will be confirmed in your final quotation.</p>
           </div>
         </div>
       </section>
@@ -610,6 +611,8 @@
 
   <script src="menu.js"></script>
   <script src="menu-te.js"></script>
+  <script src="menu-hi.js"></script>
+<script src="i18n-core.js"></script>
     <script src="menu-section.js"></script>
   <script src="plate-config.js"></script>
    <script src="food-art.js"></script>
@@ -628,6 +631,7 @@
     <script src="spice-scale.js"></script>
     <script src="planner-motion.js"></script>
     <script src="menu-first.js"></script>
+    <script src="i18n.js"></script>
 </body>
 
 </html>

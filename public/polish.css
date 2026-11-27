@@ -186,6 +186,8 @@ html main:focus { outline: 0 !important; }
 .qf-set { border: 0; margin: 0; padding: 0; min-width: 0; }
 .qf-set legend { padding: 0; margin-bottom: 8px; font-size: 12px; color: #aeb8b0; }
 .qf-help { margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.qf-note { color: var(--ink); }
+.qf-note strong { color: var(--gold); font-weight: 600; }
 .qf-pair { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 20px 28px; align-items: start; }
 
 /* choice cards: native radios, so keyboard arrows and form behaviour come for free */
@@ -627,7 +629,10 @@ html main:focus { outline: 0 !important; }
 @media (min-width: 768px) { .tk-wrap { --tk-h: 372px; } }
 
 /* ---------- our story ---------- */
-.story-section { background: var(--bg2); }
+.story-section {
+  background-color: var(--topbar-bg);
+  background-image: var(--pattern), var(--pattern), var(--foot-bg);
+}
 
 .story-head { text-align: center; }
 .story-pill { display: inline-block; padding: 9px 18px; border: 1px solid rgba(205, 168, 106, .5);
@@ -892,7 +897,7 @@ body { background-color: var(--bg); background-image: none; }
 
 /* sections that had a flat colour now let the pattern show through */
 .sig-block, .gallery-section, .contact-section, .split-section { background: none; }
-.menu-block, .story-section { background: none; }
+.menu-block { background: none; }
 .contact-card { background: rgba(16, 37, 30, .45); }
 .mn-drop-card { background: rgba(16, 37, 30, .6); }
 
@@ -1084,3 +1089,12 @@ html, body { max-width: 100%; overflow-x: clip; }
 .mf-wait::before { content: ""; width: 1px; height: clamp(28px, 6vh, 56px); background: linear-gradient(transparent, var(--gold)); opacity: .5; }
 .mf-wait svg { box-sizing: content-box; padding: 16px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); }
 .mf-wait p { margin: 0; font-size: 15px; color: var(--muted); }
+
+/* ---- Device polish: comfortable tap targets on touch, clearer hit areas on desktop/iPad ---- */
+.nav nav a { padding: 14px 4px; }
+.cin-skip { min-height: 44px; }
+@media (pointer: coarse) {
+  .mn-chip { min-height: 44px; }
+  .nav nav a, .footer-links a, .ft-grid a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+@media (pointer: coarse) { .footer-links a, .ft-grid a { min-width: 44px; } }

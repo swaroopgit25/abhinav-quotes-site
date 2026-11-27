@@ -102,7 +102,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
       address: $('q-address').value.trim(), eventType: $('q-type').value, date: $('q-date').value,
             meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value,
       spice: pickedValue('q-spice'), staff: $('q-staff').value, fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim(),
-      style: pickedValue('q-style'), extras: checkedValues('q-extra'), live: checkedValues('q-live')
+      style: pickedValue('q-style'), extras: checkedValues('q-extra'), live: checkedValues('q-live'), lang: window.LANG || 'en'
     
     };
   }
@@ -311,12 +311,13 @@ function downloadPdf(payload) {
       ['Serving style', d.style], ['Extras', extrasText(d)]]);   // after the menu
     more.style.marginTop = '18px';
     box.appendChild(more);
+        box.appendChild(el('p', 'qr-note', 'Note: Service boys are charged extra. The amount will be confirmed in your final quotation.'));
     if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     const thanks = el('div', 'qr-thanks');
     thanks.appendChild(el('h4', '', 'Your quotation has been sent ✓'));
         thanks.appendChild(el('p', '', meals.some(function (m) { return m.menu === 'all'; })
       ? 'Mrs. Vuppala Jagadeeswari will review your selection and call you to discuss and finalise the price.'
-      : 'Mrs. VSuppala Jagadeeswari will call you for further details and any changes.'));
+      : 'Mrs. Vuppala Jagadeeswari will call you for further details and any changes.'));
     thanks.appendChild(el('p', '', 'Thank you for choosing Abhinav Caterers.'));
     box.appendChild(thanks);
 

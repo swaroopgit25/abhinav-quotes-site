@@ -373,3 +373,17 @@
   .qr-grid { grid-template-columns: 1fr 1fr; gap: 14px 12px; }
   .qr-grid b { display: block; margin-top: 2px; overflow-wrap: anywhere; }
 }
+
+.lang-pick { margin: 0 0 18px; text-align: center; }
+.lang-q { margin: 0 0 10px; font-size: 13px; color: var(--muted, #b9ad92); }
+.lang-btns { display: inline-flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.lang-btns button { min-height: 44px; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--gold, #cda86a); background: transparent; color: var(--gold, #cda86a); font: 600 16px/1 'DM Sans', 'Noto Sans Telugu', 'Noto Sans Devanagari', system-ui, sans-serif; cursor: pointer; }
+.lang-btns button[aria-pressed="true"] { background: var(--gold, #cda86a); color: #0c1d18; }
+.mf-multi { margin-top: 8px; padding: 10px 14px; border-left: 3px solid var(--gold, #cda86a); background: rgba(205, 168, 106, .08); border-radius: 6px; }
+html[data-lang="te"] .chip small, html[data-lang="hi"] .chip small,
+html[data-lang="te"] .mf-rate-note .te, html[data-lang="hi"] .mf-rate-note .te { display: none; }
+html[data-lang="te"] #planner, html[data-lang="te"] #planner * { font-family: 'Noto Sans Telugu', 'Nirmala UI', Gautami, system-ui, sans-serif; letter-spacing: 0; }
+html[data-lang="hi"] #planner, html[data-lang="hi"] #planner * { font-family: 'Noto Sans Devanagari', 'Nirmala UI', Mangal, system-ui, sans-serif; letter-spacing: 0; }
+html[data-lang="te"] #planner .lang-btns button, html[data-lang="hi"] #planner .lang-btns button { font-family: 'DM Sans', 'Noto Sans Telugu', 'Noto Sans Devanagari', system-ui, sans-serif; }
+html[data-lang="te"] .svc .crew:not(:has(.waiter))::before { content: "మీ సిబ్బంది ఇక్కడ నిలబడతారు"; }
+html[data-lang="hi"] .svc .crew:not(:has(.waiter))::before { content: "आपकी टीम यहाँ खड़ी होगी"; }

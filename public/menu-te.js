@@ -502,4 +502,8 @@ window.MENU_TE = {
   'Dry Fruits & Betel Nuts': 'డ్రై ఫ్రూట్స్ & వక్కలు',
   'Bisleri Water 200 ml': 'బిస్లరీ వాటర్ 200 ml',
   'Tata Water 200 ml': 'టాటా వాటర్ 200 ml',
+    'Mineral Water (can)': 'మినరల్ వాటర్ (క్యాన్)',
+  'Sambar rice': 'సాంబార్ రైస్',
+  'Panasakaya Curry': 'పనసకాయ కూర',
+  'Dahi Vada': 'దహీ వడ',
 };

@@ -67,7 +67,7 @@ function toPayload(q) {
 // Build each quotation PDF only once: the email and the download share the result (kept 2 minutes).
 const pdfCache = new Map();
 function pdfFor(q) {
-  const key = JSON.stringify(FIELDS.map(function (f) { return q[f] === undefined ? null : q[f]; }));
+  const key = JSON.stringify([q.lang || 'en'].concat(FIELDS.map(function (f) { return q[f] === undefined ? null : q[f]; })));
   let hit = pdfCache.get(key);
   if (!hit) {
     hit = buildQuotePdf(q);
@@ -101,6 +101,7 @@ app.post('/api/quote', async (req, res) => {
   const doc = { createdAt: new Date(), pushed: false };
   FIELDS.forEach(function (f) { if (b[f] !== undefined) doc[f] = b[f]; });
     const pdfDoc = Object.assign({}, doc);
+      pdfDoc.lang = ['te', 'hi'].indexOf(b.lang) >= 0 ? b.lang : 'en';
   if (Array.isArray(doc.meals)) doc.meals = doc.meals.map(function (m) { const c = Object.assign({}, m); delete c.plate; return c; });
   try {
     if (quotes) await quotes.insertOne(doc);            // adds doc._id
@@ -167,7 +168,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  buildQuotePdf({ name: 'warm-up', phone: '0', meals: [] }).catch(function () {});
+   ['en', 'te', 'hi'].reduce(function (p, l) { return p.then(function () { return buildQuotePdf({ name: 'warm-up', phone: '0', meals: [], lang: l }); }); }, Promise.resolve()).catch(function () {});
   console.log('Running on http://localhost:' + PORT);
   console.log('Serving files from: ' + PUBLIC_DIR);
   console.log('index.html found: ' + fs.existsSync(path.join(PUBLIC_DIR, 'index.html')));
