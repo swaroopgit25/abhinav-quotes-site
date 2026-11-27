@@ -481,7 +481,7 @@
     <!-- STEPS 3 to 7 -->
     <div class="svc">
 
-      <section class="quote-form svc-block" data-reveal="left">
+      <section class="quote-form svc-block" id="blk-staff" data-reveal="left">    <!-- above Step 3 -->
         <p class="step-no">Step 3</p>
         <h3>Service boys</h3>
         <div class="qf-grid">
@@ -499,7 +499,7 @@
         </div>
       </section>
 
-      <section class="quote-form svc-block" data-reveal="right">
+     <section class="quote-form svc-block" id="blk-fulfil" data-reveal="right">  <!-- above Step 4 -->
         <p class="step-no">Step 4</p>
         <h3>Pickup or delivery</h3>
         <div class="qf-grid">
@@ -511,7 +511,7 @@
         </div>
       </section>
 
-      <section class="quote-form svc-block" data-reveal="up">
+      <section class="quote-form svc-block" id="blk-spice" data-reveal="right">  <!-- above Step 4 -->
         <p class="step-no">Step 5</p>
         <h3>Spice level</h3>
         <fieldset class="spice-meter" id="spice-scale" data-level="1">
@@ -558,7 +558,7 @@
         </fieldset>
       </section>
 
-      <section class="quote-form svc-block" data-reveal="zoom">
+      <section class="quote-form svc-block" id="blk-style" data-reveal="up">      <!-- above Step 5 -->
         <p class="step-no">Step 6</p>
         <h3>Serving style</h3>
         <div class="qf-grid">
@@ -570,7 +570,32 @@
         </div>
       </section>
 
-      <section class="quote-form svc-block" data-reveal="up">
+            <section class="quote-form svc-block" id="blk-sweet" data-reveal="up" hidden>
+        <p class="step-no">Step 5</p>
+        <h3>Sweetness level</h3>
+        <div class="qf-grid">
+          <div class="qs-grid wide" role="radiogroup" aria-label="Sweetness level">
+            <label class="qs-opt"><input type="radio" name="q-sweet" value="Less sweet"><span class="qs-card"><span class="ico" data-ico="sugar1"></span><b>Less sweet</b><small>Just a hint of sweetness</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-sweet" value="Regular" checked><span class="qs-card"><span class="ico" data-ico="sugar2"></span><b>Regular</b><small>Balanced, our usual</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-sweet" value="Extra sweet"><span class="qs-card"><span class="ico" data-ico="sugar3"></span><b>Extra sweet</b><small>For those with a sweet tooth</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-sweet" value="No added sugar"><span class="qs-card"><span class="ico" data-ico="nosugar"></span><b>No added sugar</b><small>Only the fruit&rsquo;s own sweetness</small></span></label>
+          </div>
+        </div>
+        
+          <section class="quote-form svc-block" id="blk-dstyle" data-reveal="zoom" hidden>
+        <p class="step-no">Step 6</p>
+        <h3>Drink serving style</h3>
+        <div class="qf-grid">
+          <div class="qs-grid wide" role="radiogroup" aria-label="Drink serving style">
+            <label class="qs-opt"><input type="radio" name="q-dstyle" value="Tray service" checked><span class="qs-card"><span class="ico" data-ico="tray"></span><b>Tray service</b><small>Our boys carry glasses on trays</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-dstyle" value="Drinks counter"><span class="qs-card"><span class="ico" data-ico="drinkbar"></span><b>Drinks counter</b><small>Guests pick up a glass at a counter</small></span></label>
+            <label class="qs-opt"><input type="radio" name="q-dstyle" value="Dispenser station"><span class="qs-card"><span class="ico" data-ico="dispenser"></span><b>Dispenser station</b><small>Chilled dispensers, self-serve</small></span></label>
+          </div>
+        </div>
+      </section>
+      </section>
+
+      <section class="quote-form svc-block" id="blk-extras" data-reveal="zoom">    <!-- above Step 6 -->
         <p class="step-no">Step 7</p>
         <h3>Extras</h3>
         <div class="qf-grid">
@@ -592,8 +617,9 @@
     <p class="step-no step-solo" data-reveal="up">Step 8</p>
     <div id="app"></div>
 
-    <section class="quote-form svc-block" data-reveal="up">
-      <div class="qf-grid">
+
+<section class="quote-form svc-block" id="blk-notes" data-reveal="up">     <!-- above Step 7 -->   
+  <div class="qf-grid">
         <label class="wide">Special requests
           <textarea id="q-notes" rows="3" maxlength="500" placeholder="e.g. serve sweets first, a few guests are diabetic…"></textarea>
         </label>
@@ -630,6 +656,7 @@
         <script src="gallery-drag.js"></script>
     <script src="spice-scale.js"></script>
     <script src="planner-motion.js"></script>
+    <script src="meal-steps.js"></script>
     <script src="menu-first.js"></script>
     <script src="i18n.js"></script>
 </body>
