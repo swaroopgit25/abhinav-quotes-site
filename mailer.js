@@ -130,7 +130,7 @@ function emailHtml(q, hasLogo, forOwner) {
     section('EVENT', detail('Event type', q.eventType) + detail('Event date', q.date)) +
         meals +
     priceBlock +
-    section('SERVICE DETAILS', detail('Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest') + detail('Spice level', q.spice) + detail('Pickup / delivery', q.fulfil) +
+        section('SERVICE DETAILS', (q.staff === '' ? '' : detail('Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest')) + detail('Spice level', q.spice) + detail('Sweetness level', q.sweet) + detail('Pickup / delivery', q.fulfil) +
       detail('Serving style', q.style) + detail('Extras', extras) + detail('Special requests', q.notes)) +
        (forOwner
       ? '<p style="margin-top:24px">The customer\'s quotation is attached as a PDF.</p>' +

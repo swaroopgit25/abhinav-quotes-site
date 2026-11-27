@@ -366,17 +366,18 @@ async function buildQuotePdf(q) {
   // ---------- service and preferences (after the menu) ----------
   section('SERVICE DETAILS');
   const svc = [];
-  svc.push(['Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest']);
-  svc.push(['Spice level', q.spice || '-']);
+   if (q.staff !== '') svc.push(['Service boys', +q.staff > 0 ? String(+q.staff) : 'Please suggest']);   // '' = not asked for this meal
+  if (q.spice) svc.push(['Spice level', q.spice]);
+  if (q.sweet) svc.push(['Sweetness level', q.sweet]);
   svc.push(['Pickup / delivery', q.fulfil || '-']);
-  svc.push(['Serving style', q.style || '-']);
+  if (q.style) svc.push(['Serving style', q.style]);
   const extras = (q.extras || []).map(function (e) {
     return e === 'Live counter' && (q.live || []).length ? tr('Live counter') + ' (' + q.live.map(tr).join(', ') + ')' : tr(e);
   });
   if (extras.length) svc.push(['Extras', extras.join(', ')]);
   if (q.notes) svc.push(['Special requests', q.notes]);
     grid(svc);
-  row('Note', 'Service boys are charged extra. The amount will be confirmed in your final quotation.');
+    if (q.staff !== '') row('Note', 'Service boys are charged extra. The amount will be confirmed in your final quotation.');
   y -= 8;
   
 

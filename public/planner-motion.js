@@ -24,7 +24,15 @@
         icecarve:'<path class="lid" d="M12 3l6 7-6 11-6-11z"/><path d="M6 10h12M12 3v18"/><path class="spark" d="M20 4v3M18.5 5.5h3"/>',
     vegcarve:'<g class="spin"><ellipse cx="12" cy="6.5" rx="2.2" ry="3.5"/><ellipse cx="12" cy="17.5" rx="2.2" ry="3.5"/><ellipse cx="6.5" cy="12" rx="3.5" ry="2.2"/><ellipse cx="17.5" cy="12" rx="3.5" ry="2.2"/><circle cx="12" cy="12" r="1.2"/></g>',
     fruitstall:'<path d="M3 11h18a9 9 0 0 1-18 0z"/><circle class="bit" cx="9" cy="14" r=".8"/><circle class="bit b2" cx="12" cy="16.5" r=".8"/><circle class="bit b3" cx="15" cy="14" r=".8"/>',
-    icecream:'<path d="M8 12l4 9 4-9"/><path class="lid" d="M7.5 12a4.5 4.5 0 1 1 9 0z"/>'
+    icecream:'<path d="M8 12l4 9 4-9"/><path class="lid" d="M7.5 12a4.5 4.5 0 1 1 9 0z"/>',
+        puri:    '<circle cx="12" cy="13" r="7"/><path d="M8 11c1.5-2 6.5-2 8 0"/><path class="steam" d="M10 5c-1-1.2 1-2 0-3"/><path class="steam s2" d="M14 5c-1-1.2 1-2 0-3"/>',
+    nosugar: '<rect x="6" y="9" width="11" height="11" rx="1.8"/><path d="M4 21L20 5"/>',
+    sugar1:  '<rect x="8" y="10" width="9" height="9" rx="1.6"/><path d="M10.5 13h4"/>',
+    sugar2:  '<rect x="3" y="12" width="8.5" height="8.5" rx="1.6"/><rect x="12.5" y="12" width="8.5" height="8.5" rx="1.6"/>',
+    sugar3:  '<rect x="2.5" y="13" width="8.5" height="8" rx="1.6"/><rect x="13" y="13" width="8.5" height="8" rx="1.6"/><rect x="7.8" y="4.5" width="8.5" height="8" rx="1.6"/>',
+    tray:    '<path d="M2 19h20"/><path d="M6 8h5l-.8 11H6.8z"/><path d="M13.5 11h4.5l-.6 8h-3.3z"/>',
+    drinkbar:'<path d="M3 9h18l-1.5-5h-15z"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>',
+    dispenser:'<rect x="6" y="3" width="12" height="10" rx="2"/><path d="M12 13v3"/><path d="M8 16h8v5H8z"/>'
   };
   function paintIcons() {
     Array.prototype.forEach.call(document.querySelectorAll('.ico[data-ico]'), function (el) {
@@ -34,7 +42,7 @@
   }
 
   /* ---- 2. live counters: ticking "Live counter" opens the list ---- */
-  var LIVE = [['Paan', 'paan'], ['Bobbatlu', 'bobbatlu'], ['Dosa', 'dosa'], ['Chaat', 'chaat'],
+  var LIVE = [['Paan', 'paan'], ['Bobbatlu', 'bobbatlu'], ['Dosa', 'dosa'], ['Puri Counter', 'puri'], ['Chaat', 'chaat'],
               ['Jalebi', 'jalebi'], ['Pani puri', 'panipuri'], ['Ice cream', 'icecream'],
               ['Ice carving', 'icecarve'], ['Veg carving', 'vegcarve'], ['Fruit stall', 'fruitstall']];   // add or remove here
   var liveGrid = $('live-grid'), livePanel = $('live-panel');
@@ -76,6 +84,8 @@
     'Service boys': 'Trained helpers to serve your guests with a smile.',
     'Pickup or delivery': 'We can bring it to your door, or you can collect it.',
     'Spice level': 'We cook to your family’s taste.',
+        'Sweetness level': 'We sweeten the drinks to your guests’ taste.',
+    'Drink serving style': 'How the drinks reach your guests.',
     'Serving style': 'How the food reaches your guests.',
     'Extras': 'Little touches that make the day feel grand.'
   };

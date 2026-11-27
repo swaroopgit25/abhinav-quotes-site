@@ -387,3 +387,5 @@ html[data-lang="hi"] #planner, html[data-lang="hi"] #planner * { font-family: 'N
 html[data-lang="te"] #planner .lang-btns button, html[data-lang="hi"] #planner .lang-btns button { font-family: 'DM Sans', 'Noto Sans Telugu', 'Noto Sans Devanagari', system-ui, sans-serif; }
 html[data-lang="te"] .svc .crew:not(:has(.waiter))::before { content: "మీ సిబ్బంది ఇక్కడ నిలబడతారు"; }
 html[data-lang="hi"] .svc .crew:not(:has(.waiter))::before { content: "आपकी टीम यहाँ खड़ी होगी"; }
+
+.svc .svc-block.last-vis::after { display: none; }

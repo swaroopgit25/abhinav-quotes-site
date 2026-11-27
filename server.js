@@ -58,7 +58,7 @@ async function resendUnpushed() {
 setInterval(function () { resendUnpushed().catch(function () {}); }, 15 * 60 * 1000);
 
 const FIELDS = ['name', 'phone', 'email', 'address', 'eventType', 'date', 'meal', 'time', 'guests',
-  'spice', 'staff', 'fulfil', 'notes', 'style', 'extras', 'live', 'meals'];
+  'spice', 'sweeet' , 'staff', 'fulfil', 'notes', 'style', 'extras', 'live', 'meals'];
 function toPayload(q) {
   const out = { source: 'website', websiteQuoteId: String(q._id || ''), createdAt: q.createdAt };
   FIELDS.forEach(function (f) { if (q[f] !== undefined) out[f] = q[f]; });

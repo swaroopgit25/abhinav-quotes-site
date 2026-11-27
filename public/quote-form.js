@@ -96,14 +96,18 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
   fulfilNote();
 
   // ---- build the quotation ----
-  function readForm() {
+    function readForm() {
+    // steps that are hidden for the chosen meal(s) are not sent (meal-steps.js decides)
+    const on = window.stepsOn ? window.stepsOn() : { staff: 1, spice: 1, style: 1, extras: 1 };
+    const style = [on.style ? pickedValue('q-style') : '', on.dstyle ? pickedValue('q-dstyle') : ''].filter(Boolean).join(' · ');
     return {
       name: $('q-name').value.trim(), phone: $('q-phone').value.trim(), email: $('q-email').value.trim(),
       address: $('q-address').value.trim(), eventType: $('q-type').value, date: $('q-date').value,
-            meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value,
-      spice: pickedValue('q-spice'), staff: $('q-staff').value, fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim(),
-      style: pickedValue('q-style'), extras: checkedValues('q-extra'), live: checkedValues('q-live'), lang: window.LANG || 'en'
-    
+      meal: $('q-meal').value, time: $('q-time').value, guests: $('q-guests').value,
+      spice: on.spice ? pickedValue('q-spice') : '', sweet: on.sweet ? pickedValue('q-sweet') : '',
+      staff: on.staff ? $('q-staff').value : '', fulfil: pickedValue('q-fulfil'), notes: $('q-notes').value.trim(),
+      style: style, extras: on.extras ? checkedValues('q-extra') : [], live: on.extras ? checkedValues('q-live') : [],
+      lang: window.LANG || 'en'
     };
   }
     function dishLines(picked) {
@@ -162,6 +166,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
 
     // ---- several meals in one quotation ----
   const savedMeals = [];
+    window.savedMealNames = function () { return savedMeals.map(function (m) { return m.meal; }); };   // read by meal-steps.js
   function currentMeal() {
     const picked = window.getPicked().slice();
            return { meal: $('q-meal').value, label: mealLabel($('q-meal').value), menu: window.menuModeOf ? window.menuModeOf($('q-meal').value) : '',
@@ -180,6 +185,7 @@ const listText = function (a) { return a.length ? a.join(', ') : 'None'; };
       box.appendChild(row);
     });
     box.hidden = !savedMeals.length;
+        document.dispatchEvent(new Event('mealschange'));   // meal-steps.js re-checks which steps to show
   }
    $('save-meal-btn').addEventListener('click', function () {
     const msg = $('quote-msg');
@@ -307,11 +313,17 @@ function downloadPdf(payload) {
     }
 
 
-    const more = grid([['Service boys', staffText(d.staff)], ['Spice level', d.spice], ['Pickup / delivery', d.fulfil],
-      ['Serving style', d.style], ['Extras', extrasText(d)]]);   // after the menu
+            const svcRows = [];                                          // only the steps that were asked for this meal
+    if (d.staff !== '') svcRows.push(['Service boys', staffText(d.staff)]);
+    if (d.spice) svcRows.push(['Spice level', d.spice]);
+    if (d.sweet) svcRows.push(['Sweetness level', d.sweet]);
+    svcRows.push(['Pickup / delivery', d.fulfil]);
+    if (d.style) svcRows.push(['Serving style', d.style]);
+    if (d.extras.length) svcRows.push(['Extras', extrasText(d)]);
+    const more = grid(svcRows);   // after the menu
     more.style.marginTop = '18px';
     box.appendChild(more);
-        box.appendChild(el('p', 'qr-note', 'Note: Service boys are charged extra. The amount will be confirmed in your final quotation.'));
+    if (d.staff !== '') box.appendChild(el('p', 'qr-note', 'Note: Service boys are charged extra. The amount will be confirmed in your final quotation.'));;
     if (d.notes) { const nr = el('div', 'picked-zone'); nr.appendChild(el('b', '', 'Special requests')); nr.appendChild(el('span', '', d.notes)); box.appendChild(nr); }
     const thanks = el('div', 'qr-thanks');
     thanks.appendChild(el('h4', '', 'Your quotation has been sent ✓'));
